@@ -9,7 +9,7 @@ namespace TombLib.LevelData
     }
     public enum LightType : byte
     {
-        Point, Shadow, Spot, Effect, Sun, FogBulb
+        Point, Shadow, Spot, Effect, Sun, FogBulb, CausticsEffect
     }
 
     public class LightInstance : PositionBasedObjectInstance, IColorable, IReplaceable, IRotateableYX
@@ -59,6 +59,14 @@ namespace TombLib.LevelData
                     InnerRange = 0.99f;
                     OuterRange = 1.0f;
                     IsDynamicallyUsed = false;
+                    break;
+                case LightType.CausticsEffect:
+                    // Dedicated runtime controller. It does not illuminate room geometry.
+                    InnerRange = 0.0f;
+                    OuterRange = 5.0f;
+                    IsDynamicallyUsed = true;
+                    IsStaticallyUsed = false;
+                    IsUsedForImportedGeometry = false;
                     break;
                 case LightType.FogBulb:
                     IsObstructedByRoomGeometry = false;
