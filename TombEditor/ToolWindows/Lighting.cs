@@ -11,12 +11,19 @@ namespace TombEditor.ToolWindows
     {
         private readonly Editor _editor;
 
+        // UI ordering is independent of serialized LightType enum values.
+        private static readonly LightType[] DisplayLightTypes = {
+            LightType.Point, LightType.Shadow, LightType.Spot,
+            LightType.Effect, LightType.CausticsEffect, LightType.Sun, LightType.FogBulb
+        };
+        private static int LightTypeIndex(LightType type) => Array.IndexOf(DisplayLightTypes, type);
+
         public Lighting()
         {
             InitializeComponent();
             CommandHandler.AssignCommandsToControls(Editor.Instance, this, toolTip);
 
-            foreach (LightType l in Enum.GetValues(typeof(LightType)))
+            foreach (LightType l in DisplayLightTypes)
                 cmbLightTypes.Items.Add(l.ToString().SplitCamelcase());
 
             cmbLightQuality.SelectedIndex = cmbLightTypes.SelectedIndex = 0; // Reset index to default
@@ -143,7 +150,7 @@ namespace TombEditor.ToolWindows
                 cbLightCastsShadow.Checked = light?.CastDynamicShadows ?? false;
                 cmbLightQuality.Enabled = light != null;
                 cmbLightQuality.SelectedIndex = (int)(light?.Quality ?? 0);
-                cmbLightTypes.SelectedIndex = (int)(light?.Type ?? (LightType)cmbLightTypes.SelectedIndex);
+                cmbLightTypes.SelectedIndex = light == null ? cmbLightTypes.SelectedIndex : LightTypeIndex(light.Type);
             }
 
             // Update tooltip texts
@@ -264,7 +271,7 @@ namespace TombEditor.ToolWindows
 
         private void butAddLight_Click(object sender, EventArgs e)
         {
-            EditorActions.PlaceLight((LightType)cmbLightTypes.SelectedIndex);
+            EditorActions.PlaceLight(DisplayLightTypes[cmbLightTypes.SelectedIndex]);
         }
 
         private void cmbLightTypes_SelectedIndexChanged(object sender, EventArgs e)
