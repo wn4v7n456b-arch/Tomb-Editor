@@ -1239,6 +1239,14 @@ namespace TombLib.LevelData.Compilers
                         newLight.Out = light.OuterRange * Level.SectorSizeUnit;
                         newLight.Length = light.Intensity; // Store float intensity as length
                         break;
+                    case LightType.CausticsEffect:
+                        // Reserved TR4+ light type 5. The Asha runtime interprets
+                        // this as a caustics-only controller, never as a normal lamp.
+                        // Vanilla TR4 engines must not be used with these levels.
+                        newLight.LightType = 5;
+                        newLight.In = light.InnerRange * Level.SectorSizeUnit;
+                        newLight.Out = light.OuterRange * Level.SectorSizeUnit;
+                        break;
                     case LightType.Effect:
                         continue;
                     default:
