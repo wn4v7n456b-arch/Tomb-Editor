@@ -81,6 +81,11 @@ namespace TombEditor.ToolWindows
                             HasOutRange = true;
                             break;
 
+                        case LightType.CausticsEffect:
+                            HasInRange = true;
+                            HasOutRange = true;
+                            break;
+
                         case LightType.FogBulb:
                             HasOutRange = true;
                             break;
