@@ -102,13 +102,14 @@ namespace TombEditor.Forms
         public FormMain(Editor editor)
         {
             InitializeComponent();
+            Colors.EnableAshaExpedition();
             _editor = editor;
             _editor.EditorEventRaised += EditorEventRaised;
 
             // Initialize everything needed
             _editor.RaiseEvent(new Editor.InitEvent());
 
-            Text = "Tomb Editor " + Application.ProductVersion + " - Untitled";
+            Text = "ASHA KINGSLEY | Expedition Level Editor " + Application.ProductVersion + " - Untitled";
             Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath);
 
             // Only show debug menu when a debugger is attached...
@@ -415,7 +416,7 @@ namespace TombEditor.Forms
         {
             // Refresh all forms if UI colours were changed
             var newButtonHighlightColour = ColorTranslator.FromHtml(_editor.Configuration.UI_FormColor_ButtonHighlight);
-            if (Colors.HighlightBase != newButtonHighlightColour)
+            if (!Colors.AshaExpeditionEnabled && Colors.HighlightBase != newButtonHighlightColour)
             {
                 Colors.HighlightBase = newButtonHighlightColour;
                 foreach (var form in Application.OpenForms)
