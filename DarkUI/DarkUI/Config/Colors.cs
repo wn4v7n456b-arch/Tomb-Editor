@@ -6,6 +6,44 @@ namespace DarkUI.Config
 {
     public static class Colors
     {
+        // Opt-in expedition palette; other DarkUI applications retain their original theme.
+        public static bool AshaExpeditionEnabled { get; private set; }
+
+        public static void EnableAshaExpedition()
+        {
+            AshaExpeditionEnabled = true;
+            ApplyAshaExpedition();
+        }
+
+        private static void ApplyAshaExpedition()
+        {
+            if (!AshaExpeditionEnabled)
+                return;
+
+            GreyBackground = Color.FromArgb(39, 39, 37);
+            HeaderBackground = Color.FromArgb(32, 32, 30);
+            BlueBackground = Color.FromArgb(69, 58, 43);
+            DarkBlueBackground = Color.FromArgb(51, 45, 36);
+            DarkBackground = Color.FromArgb(25, 26, 25);
+            MediumBackground = Color.FromArgb(34, 35, 33);
+            LightBackground = Color.FromArgb(53, 53, 49);
+            LighterBackground = Color.FromArgb(77, 75, 68);
+            LightestBackground = Color.FromArgb(191, 181, 160);
+            LightBorder = Color.FromArgb(85, 78, 65);
+            DarkBorder = Color.FromArgb(23, 24, 23);
+            BlueHighlight = Color.FromArgb(194, 156, 93);
+            BlueSelection = Color.FromArgb(117, 88, 48);
+            GreyHighlight = Color.FromArgb(127, 116, 96);
+            GreySelection = Color.FromArgb(82, 76, 65);
+            DarkGreySelection = Color.FromArgb(64, 59, 51);
+            DarkBlueBorder = Color.FromArgb(72, 60, 44);
+            LightBlueBorder = Color.FromArgb(126, 101, 67);
+            ActiveControl = Color.FromArgb(216, 183, 121);
+            LightText = Color.FromArgb(232, 227, 215);
+            DisabledText = Color.FromArgb(148, 143, 131);
+            HighlightBase = Color.FromArgb(194, 156, 93);
+        }
+
         // Default color values. Will be always used if brightness is unmodified.
 
         public static Color GreyBackground { get; private set; } = Color.FromArgb(60, 63, 65);
@@ -87,6 +125,7 @@ namespace DarkUI.Config
                 // Text is multiplied by lesser value to preserve contrast
                 LightText           = DarkBase.Multiply(FontBrightness * 3.667f, FontBrightness * 3.492f, FontBrightness * 3.385f);
                 DisabledText        = DarkBase.Multiply(FontBrightness * 2.550f, FontBrightness * 2.429f, FontBrightness * 2.354f);
+                ApplyAshaExpedition();
             }
         }
         private static float _brightness = 1.0f; // Set it here by default, so designer will correctly show controls which use brightness natively.
