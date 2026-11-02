@@ -1246,6 +1246,15 @@ namespace TombLib.LevelData.Compilers
                         newLight.LightType = 5;
                         newLight.In = light.InnerRange * Level.SectorSizeUnit;
                         newLight.Out = light.OuterRange * Level.SectorSizeUnit;
+                        // Type-5-only payload: preserve the standard radius in Out,
+                        // and carry the three independent caustics dimensions in
+                        // fields unused by this controller. Other light types remain
+                        // byte-for-byte unchanged.
+                        // Runtime must explicitly decode these type-5 fields before
+                        // the authored dimensions can affect the shader.
+                        newLight.Length = light.CausticsWidth;
+                        newLight.CutOff = light.CausticsHeight;
+                        newLight.DirectionX = light.CausticsScale;
                         break;
                     case LightType.Effect:
                         continue;
