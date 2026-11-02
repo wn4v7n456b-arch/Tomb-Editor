@@ -795,7 +795,7 @@ namespace TombLib.LevelData.IO
                         }
                     }
                     else if (o is LightInstance)
-                        using (var chunk = chunkIO.WriteChunk(Prj2Chunks.ObjectLight5, LEB128.MaximumSize2Byte))
+                        using (var chunk = chunkIO.WriteChunk(Prj2Chunks.ObjectLight6, LEB128.MaximumSize2Byte))
                         {
                             var instance = (LightInstance)o;
                             LEB128.Write(chunkIO.Raw, objectInstanceLookup.TryGetOrDefault(instance, -1));
@@ -816,6 +816,10 @@ namespace TombLib.LevelData.IO
                             chunkIO.Raw.Write(instance.IsUsedForImportedGeometry);
                             chunkIO.Raw.Write((byte)instance.Quality);
                             chunkIO.Raw.Write(instance.CastDynamicShadows);
+                            chunkIO.Raw.Write(instance.CausticsSpeed);
+                            chunkIO.Raw.Write(instance.CausticsPatternSize);
+                            chunkIO.Raw.Write(instance.CausticsDistortion);
+                            chunkIO.Raw.Write(instance.CausticsSoftness);
                         }
                     else if (o is PortalInstance && rooms.ContainsKey(((PortalInstance)o).AdjoiningRoom))
                         chunkIO.WriteChunkWithChildren(Prj2Chunks.ObjectPortal2, () =>
