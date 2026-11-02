@@ -337,7 +337,7 @@ namespace TombEditor.Forms
                 string LevelName = string.IsNullOrEmpty(_editor.Level.Settings.LevelFilePath) ? "Untitled" :
                     PathC.GetFileNameWithoutExtensionTry(_editor.Level.Settings.LevelFilePath);
 
-                Text = "Tomb Editor " + Application.ProductVersion + " - " + LevelName + (_editor.HasUnsavedChanges ? "*" : "");
+                Text = "ASHA KINGSLEY | Expedition Level Editor " + Application.ProductVersion + " - " + LevelName + (_editor.HasUnsavedChanges ? "*" : "");
             }
 
             // Update save button
