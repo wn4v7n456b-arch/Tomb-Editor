@@ -50,6 +50,35 @@ namespace TombEditor.Forms
             }
         }
 
+        // F12 keeps the editor layout in memory and restores it without saving.
+        private bool _ashaFocusMode;
+        private readonly List<DarkDockContent> _ashaHiddenFocusPanels = new List<DarkDockContent>();
+
+        private void ToggleAshaFocusMode()
+        {
+            if (!_ashaFocusMode)
+            {
+                _ashaHiddenFocusPanels.Clear();
+                foreach (DarkDockContent panel in toolWindows)
+                {
+                    if (panel is MainView || !dockArea.ContainsContent(panel))
+                        continue;
+                    _ashaHiddenFocusPanels.Add(panel);
+                }
+                foreach (DarkDockContent panel in _ashaHiddenFocusPanels)
+                    dockArea.RemoveContent(panel);
+                _ashaFocusMode = true;
+            }
+            else
+            {
+                foreach (DarkDockContent panel in _ashaHiddenFocusPanels)
+                    dockArea.AddContent(panel);
+                _ashaHiddenFocusPanels.Clear();
+                _ashaFocusMode = false;
+            }
+            ToolWindow_BuildMenu();
+        }
+
         // Dockable tool windows are placed on actual dock panel at runtime.
 
         private readonly List<DarkDockContent> toolWindows = new List<DarkDockContent>
@@ -572,6 +601,11 @@ namespace TombEditor.Forms
 
         protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
         {
+            if (keyData == Keys.F12)
+            {
+                ToggleAshaFocusMode();
+                return true;
+            }
             if (keyData == Keys.F11)
             {
                 ToggleAshaFullScreen();
