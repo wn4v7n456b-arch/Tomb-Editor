@@ -11,6 +11,7 @@ on:
   push:
     branches:
       - master
+      - feature/asha-caustics-effect
   workflow_dispatch:
 
 # A newer push to the same branch makes an in-flight run obsolete.
