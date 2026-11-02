@@ -10,6 +10,57 @@ namespace TombEditor.ToolWindows
     public partial class Lighting : DarkToolWindow
     {
         private readonly Editor _editor;
+        private readonly System.Windows.Forms.FlowLayoutPanel causticsPanel = new System.Windows.Forms.FlowLayoutPanel();
+        private readonly NumericUpDown causticsSpeed = new NumericUpDown();
+        private readonly NumericUpDown causticsPattern = new NumericUpDown();
+        private readonly NumericUpDown causticsDistortion = new NumericUpDown();
+        private readonly NumericUpDown causticsSoftness = new NumericUpDown();
+        private bool updatingCausticsControls;
+
+        private void AddCausticsSetting(string label, NumericUpDown input, decimal min, decimal max,
+            decimal increment, Func<LightInstance, float> getter, Action<LightInstance, float> setter)
+        {
+            var title = new Label { Text = label, AutoSize = false, Width = 94, Height = 22,
+                TextAlign = System.Drawing.ContentAlignment.MiddleRight };
+            input.Width = 65;
+            input.DecimalPlaces = 2;
+            input.Minimum = min;
+            input.Maximum = max;
+            input.Increment = increment;
+            causticsPanel.Controls.Add(title);
+            causticsPanel.Controls.Add(input);
+            input.ValueChanged += (sender, args) =>
+            {
+                if (updatingCausticsControls || !causticsPanel.Visible) return;
+                EditorActions.UpdateLight<float>(
+                    (light, value) => light.Type != LightType.CausticsEffect ||
+                        Math.Abs(getter(light) - value) < 0.005f,
+                    (light, value) => setter(light, value),
+                    light => (float)input.Value, updateLighting: false);
+            };
+        }
+
+        private void InitializeCausticsControls()
+        {
+            causticsPanel.FlowDirection = FlowDirection.LeftToRight;
+            causticsPanel.WrapContents = true;
+            causticsPanel.AutoScroll = true;
+            causticsPanel.Dock = DockStyle.Bottom;
+            causticsPanel.Height = 72;
+            causticsPanel.Visible = false;
+            AddCausticsSetting("Speed", causticsSpeed, 0, 4, 0.05m,
+                l => l.CausticsSpeed, (l, v) => l.CausticsSpeed = v);
+            AddCausticsSetting("Pattern size", causticsPattern, 0.1m, 8, 0.1m,
+                l => l.CausticsPatternSize, (l, v) => l.CausticsPatternSize = v);
+            AddCausticsSetting("Distortion", causticsDistortion, 0, 2, 0.05m,
+                l => l.CausticsDistortion, (l, v) => l.CausticsDistortion = v);
+            AddCausticsSetting("Softness", causticsSoftness, 0, 1, 0.05m,
+                l => l.CausticsSoftness, (l, v) => l.CausticsSoftness = v);
+            Controls.Add(causticsPanel);
+            MinimumSize = new System.Drawing.Size(MinimumSize.Width, 225);
+            Height = Math.Max(Height, 225);
+        }
+
 
         // UI ordering is independent of serialized LightType enum values.
         private static readonly LightType[] DisplayLightTypes = {
@@ -21,6 +72,7 @@ namespace TombEditor.ToolWindows
         public Lighting()
         {
             InitializeComponent();
+            InitializeCausticsControls();
             CommandHandler.AssignCommandsToControls(Editor.Instance, this, toolTip);
 
             foreach (LightType l in DisplayLightTypes)
@@ -126,6 +178,17 @@ namespace TombEditor.ToolWindows
                 toolTip.SetToolTip(numInnerRange, isCaustics
                     ? "Reserved for future caustics softness controls; not yet connected in-game."
                     : "Inner radius or distance");
+
+                updatingCausticsControls = true;
+                causticsPanel.Visible = isCaustics;
+                if (isCaustics)
+                {
+                    causticsSpeed.Value = Math.Max(causticsSpeed.Minimum, Math.Min(causticsSpeed.Maximum, (decimal)light.CausticsSpeed));
+                    causticsPattern.Value = Math.Max(causticsPattern.Minimum, Math.Min(causticsPattern.Maximum, (decimal)light.CausticsPatternSize));
+                    causticsDistortion.Value = Math.Max(causticsDistortion.Minimum, Math.Min(causticsDistortion.Maximum, (decimal)light.CausticsDistortion));
+                    causticsSoftness.Value = Math.Max(causticsSoftness.Minimum, Math.Min(causticsSoftness.Maximum, (decimal)light.CausticsSoftness));
+                }
+                updatingCausticsControls = false;
 
                 // Update enable state
                 // We set it before the values to make sure that irrelevant values are
