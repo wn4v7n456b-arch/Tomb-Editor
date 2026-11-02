@@ -225,6 +225,7 @@ namespace TombLib.LevelData.IO
         /**********/public static readonly ChunkId ObjectLight3 = ChunkId.FromString("TeLig3");
         /**********/public static readonly ChunkId ObjectLight4 = ChunkId.FromString("TeLig4");
         /**********/public static readonly ChunkId ObjectLight5 = ChunkId.FromString("TeLig5");
+        /**********/public static readonly ChunkId ObjectLight6 = ChunkId.FromString("TeLig6");
         /**********/public static readonly ChunkId ObjectPortal = ChunkId.FromString("TePor");
         /**********/public static readonly ChunkId ObjectPortal2 = ChunkId.FromString("TePor2");
         /**********/public static readonly ChunkId ObjectPortalMirrorProperties = ChunkId.FromString("TePorMirror");
