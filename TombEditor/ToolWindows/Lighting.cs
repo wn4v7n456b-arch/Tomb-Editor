@@ -48,14 +48,13 @@ namespace TombEditor.ToolWindows
             causticsPanel.Dock = DockStyle.Bottom;
             causticsPanel.Height = 72;
             causticsPanel.Visible = false;
-            AddCausticsSetting("Speed", causticsSpeed, 0, 4, 0.05m,
-                l => l.CausticsSpeed, (l, v) => l.CausticsSpeed = v);
-            AddCausticsSetting("Pattern size", causticsPattern, 0.1m, 8, 0.1m,
-                l => l.CausticsPatternSize, (l, v) => l.CausticsPatternSize = v);
-            AddCausticsSetting("Distortion", causticsDistortion, 0, 2, 0.05m,
-                l => l.CausticsDistortion, (l, v) => l.CausticsDistortion = v);
-            AddCausticsSetting("Softness", causticsSoftness, 0, 1, 0.05m,
-                l => l.CausticsSoftness, (l, v) => l.CausticsSoftness = v);
+            AddCausticsSetting("Scale", causticsSpeed, 0.1m, 20, 0.1m,
+                l => l.CausticsScale, (l, v) => l.CausticsScale = v);
+            AddCausticsSetting("Width", causticsPattern, 0.1m, 20, 0.1m,
+                l => l.CausticsWidth, (l, v) => l.CausticsWidth = v);
+            AddCausticsSetting("Height", causticsDistortion, 0.1m, 20, 0.1m,
+                l => l.CausticsHeight, (l, v) => l.CausticsHeight = v);
+
             Controls.Add(causticsPanel);
             MinimumSize = new System.Drawing.Size(MinimumSize.Width, 225);
             Height = Math.Max(Height, 225);
@@ -183,10 +182,9 @@ namespace TombEditor.ToolWindows
                 causticsPanel.Visible = isCaustics;
                 if (isCaustics)
                 {
-                    causticsSpeed.Value = Math.Max(causticsSpeed.Minimum, Math.Min(causticsSpeed.Maximum, (decimal)light.CausticsSpeed));
-                    causticsPattern.Value = Math.Max(causticsPattern.Minimum, Math.Min(causticsPattern.Maximum, (decimal)light.CausticsPatternSize));
-                    causticsDistortion.Value = Math.Max(causticsDistortion.Minimum, Math.Min(causticsDistortion.Maximum, (decimal)light.CausticsDistortion));
-                    causticsSoftness.Value = Math.Max(causticsSoftness.Minimum, Math.Min(causticsSoftness.Maximum, (decimal)light.CausticsSoftness));
+                    causticsSpeed.Value = Math.Max(causticsSpeed.Minimum, Math.Min(causticsSpeed.Maximum, (decimal)light.CausticsScale));
+                    causticsPattern.Value = Math.Max(causticsPattern.Minimum, Math.Min(causticsPattern.Maximum, (decimal)light.CausticsWidth));
+                    causticsDistortion.Value = Math.Max(causticsDistortion.Minimum, Math.Min(causticsDistortion.Maximum, (decimal)light.CausticsHeight));
                 }
                 updatingCausticsControls = false;
 
