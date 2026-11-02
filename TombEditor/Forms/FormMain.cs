@@ -50,30 +50,27 @@ namespace TombEditor.Forms
             }
         }
 
-        // F12 keeps the editor layout in memory and restores it without saving.
+        // F12 preserves the complete docking arrangement, including panel positions.
         private bool _ashaFocusMode;
-        private readonly List<DarkDockContent> _ashaHiddenFocusPanels = new List<DarkDockContent>();
+        private DockPanelState _ashaFocusSavedLayout;
 
         private void ToggleAshaFocusMode()
         {
             if (!_ashaFocusMode)
             {
-                _ashaHiddenFocusPanels.Clear();
+                _ashaFocusSavedLayout = dockArea.GetDockPanelState().Clone();
                 foreach (DarkDockContent panel in toolWindows)
                 {
-                    if (panel is MainView || !dockArea.ContainsContent(panel))
-                        continue;
-                    _ashaHiddenFocusPanels.Add(panel);
+                    if (!(panel is MainView) && dockArea.ContainsContent(panel))
+                        dockArea.RemoveContent(panel);
                 }
-                foreach (DarkDockContent panel in _ashaHiddenFocusPanels)
-                    dockArea.RemoveContent(panel);
                 _ashaFocusMode = true;
             }
             else
             {
-                foreach (DarkDockContent panel in _ashaHiddenFocusPanels)
-                    dockArea.AddContent(panel);
-                _ashaHiddenFocusPanels.Clear();
+                dockArea.RemoveContent();
+                dockArea.RestoreDockPanelState(_ashaFocusSavedLayout, GetWindow);
+                _ashaFocusSavedLayout = null;
                 _ashaFocusMode = false;
             }
             ToolWindow_BuildMenu();
@@ -560,6 +557,11 @@ namespace TombEditor.Forms
 
             if (!e.Cancel)
             {
+                // Focus mode is temporary: restore the original docking layout before saving.
+                if (_ashaFocusMode)
+                    ToggleAshaFocusMode();
+                if (_ashaFullScreen)
+                    ToggleAshaFullScreen();
                 // Always save window properties on exit and resave config!
                 SaveWindowLayout(_editor.Configuration);
                 Configuration.SaveWindowProperties(this, _editor.Configuration);
