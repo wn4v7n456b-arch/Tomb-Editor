@@ -276,7 +276,8 @@ namespace TombEditor.ToolWindows
 
         private void cmbLightTypes_SelectedIndexChanged(object sender, EventArgs e)
         {
-            EditorActions.UpdateLightType((LightType)cmbLightTypes.SelectedIndex);
+            if (cmbLightTypes.SelectedIndex >= 0 && cmbLightTypes.SelectedIndex < DisplayLightTypes.Length)
+                EditorActions.UpdateLightType(DisplayLightTypes[cmbLightTypes.SelectedIndex]);
         }
     }
 }
