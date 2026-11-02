@@ -1252,9 +1252,12 @@ namespace TombLib.LevelData.Compilers
                         // byte-for-byte unchanged.
                         // Runtime must explicitly decode these type-5 fields before
                         // the authored dimensions can affect the shader.
-                        newLight.Length = light.CausticsWidth;
-                        newLight.CutOff = light.CausticsHeight;
-                        newLight.DirectionX = light.CausticsScale;
+                        // Tomb4Plus copies DirectionX/Y/Z into LIGHTINFO nx/ny/nz.
+                        // Unlike Length, these survive ProcessRoomData and can be
+                        // decoded by the Asha type-5 controller at runtime.
+                        newLight.DirectionX = light.CausticsWidth;
+                        newLight.DirectionY = light.CausticsHeight;
+                        newLight.DirectionZ = light.CausticsScale;
                         break;
                     case LightType.Effect:
                         continue;
