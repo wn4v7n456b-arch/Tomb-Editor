@@ -19,6 +19,9 @@ namespace TombLib.LevelData
         public Vector3 Color { get; set; } = new Vector3(1.0f, 1.0f, 1.0f); // Normalized float. (1.0 meaning normal brightness, 2.0 is the maximal brightness supported by tomb4.exe)
         public float Intensity { get; set; } = 0.5f;
         // Authored caustics parameters, persisted in PRJ2 light version 6.
+        public float CausticsScale { get; set; } = 1.0f;
+        public float CausticsWidth { get; set; } = 3.0f;
+        public float CausticsHeight { get; set; } = 2.0f;
         public float CausticsSpeed { get; set; } = 1.0f;
         public float CausticsPatternSize { get; set; } = 1.0f;
         public float CausticsDistortion { get; set; } = 0.5f;
