@@ -22,6 +22,34 @@ namespace TombEditor.Forms
         private static readonly Logger logger = LogManager.GetCurrentClassLogger();
         private readonly Editor _editor;
 
+        // Full-screen mode is temporary; never persist its borderless geometry.
+        private bool _ashaFullScreen;
+        private FormBorderStyle _ashaPreviousBorderStyle;
+        private FormWindowState _ashaPreviousWindowState;
+        private Rectangle _ashaPreviousBounds;
+
+        private void ToggleAshaFullScreen()
+        {
+            if (!_ashaFullScreen)
+            {
+                _ashaPreviousBorderStyle = FormBorderStyle;
+                _ashaPreviousWindowState = WindowState;
+                _ashaPreviousBounds = Bounds;
+                WindowState = FormWindowState.Normal;
+                FormBorderStyle = FormBorderStyle.None;
+                Bounds = Screen.FromControl(this).Bounds;
+                _ashaFullScreen = true;
+            }
+            else
+            {
+                WindowState = FormWindowState.Normal;
+                FormBorderStyle = _ashaPreviousBorderStyle;
+                Bounds = _ashaPreviousBounds;
+                WindowState = _ashaPreviousWindowState;
+                _ashaFullScreen = false;
+            }
+        }
+
         // Dockable tool windows are placed on actual dock panel at runtime.
 
         private readonly List<DarkDockContent> toolWindows = new List<DarkDockContent>
@@ -544,6 +572,12 @@ namespace TombEditor.Forms
 
         protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
         {
+            if (keyData == Keys.F11)
+            {
+                ToggleAshaFullScreen();
+                return true;
+            }
+
             // Disable all hotkeys in fly mode except ToggleFlyMode
             if (_editor.FlyMode && !_editor.Configuration.UI_Hotkeys["ToggleFlyMode"].Contains(keyData))
                 return base.ProcessCmdKey(ref msg, keyData);
