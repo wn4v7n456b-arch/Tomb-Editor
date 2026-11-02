@@ -114,6 +114,19 @@ namespace TombEditor.ToolWindows
                             break;
                     }
 
+                // Explain the existing caustics controls without changing the
+                // layout or affecting any other light type.
+                bool isCaustics = light?.Type == LightType.CausticsEffect;
+                toolTip.SetToolTip(numOuterRange, isCaustics
+                    ? "Caustics spread radius: smaller values keep the moving reflections local."
+                    : "Outer radius or distance");
+                toolTip.SetToolTip(numIntensity, isCaustics
+                    ? "Caustics brightness: lower values produce subtler water reflections."
+                    : "Light intensity");
+                toolTip.SetToolTip(numInnerRange, isCaustics
+                    ? "Reserved for future caustics softness controls; not yet connected in-game."
+                    : "Inner radius or distance");
+
                 // Update enable state
                 // We set it before the values to make sure that irrelevant values are
                 // not recognized as being changed to 0 in the "ValueChanged" functions.
