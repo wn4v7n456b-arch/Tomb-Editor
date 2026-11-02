@@ -126,6 +126,19 @@ namespace TombEditor.Forms
             GetWindow<ItemBrowser>().InitializeRendering(_editor.RenderingDevice);
             GetWindow<ImportedGeometryBrowser>().InitializeRendering(_editor.RenderingDevice);
 
+            // Asha Expedition: prominent one-click build-and-play action.
+            var ashaPlayButton = new ToolStripMenuItem
+            {
+                Name = "ashaBuildAndPlayButton",
+                Text = "▶ PLAY",
+                ToolTipText = "Build the current level and launch the configured game (Shift+F5)",
+                ForeColor = Color.FromArgb(216, 183, 121),
+                Font = new Font(menuStrip.Font, FontStyle.Bold),
+                Alignment = ToolStripItemAlignment.Right
+            };
+            ashaPlayButton.Click += (sender, args) => EditorActions.BuildLevelAndPlay(this);
+            menuStrip.Items.Add(ashaPlayButton);
+
             // Restore window settings and prepare UI
             Configuration.LoadWindowProperties(this, _editor.Configuration);
             GenerateMenusRecursive(menuStrip.Items);
