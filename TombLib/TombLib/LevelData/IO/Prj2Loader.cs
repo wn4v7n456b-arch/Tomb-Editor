@@ -1626,7 +1626,8 @@ namespace TombLib.LevelData.IO
                 }
                 else if (id3 == Prj2Chunks.ObjectLight3 ||
                          id3 == Prj2Chunks.ObjectLight4 ||
-                         id3 == Prj2Chunks.ObjectLight5)
+                         id3 == Prj2Chunks.ObjectLight5 ||
+                         id3 == Prj2Chunks.ObjectLight6)
                 {
                     var instance = new LightInstance((LightType)LEB128.ReadLong(chunkIO.Raw));
                     instance.Position = chunkIO.Raw.ReadVector3();
@@ -1644,9 +1645,16 @@ namespace TombLib.LevelData.IO
                     instance.IsUsedForImportedGeometry = chunkIO.Raw.ReadBoolean();
                     instance.Quality = (LightQuality)chunkIO.Raw.ReadByte();
 
-                    if (id3 == Prj2Chunks.ObjectLight5)
+                    if (id3 == Prj2Chunks.ObjectLight5 || id3 == Prj2Chunks.ObjectLight6)
                     {
                         instance.CastDynamicShadows = chunkIO.Raw.ReadBoolean();
+                    }
+                    if (id3 == Prj2Chunks.ObjectLight6)
+                    {
+                        instance.CausticsSpeed = chunkIO.Raw.ReadSingle();
+                        instance.CausticsPatternSize = chunkIO.Raw.ReadSingle();
+                        instance.CausticsDistortion = chunkIO.Raw.ReadSingle();
+                        instance.CausticsSoftness = chunkIO.Raw.ReadSingle();
                     }
 
                     // Remap fog bulb intensity from red color
