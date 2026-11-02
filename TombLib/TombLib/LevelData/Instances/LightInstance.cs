@@ -63,7 +63,10 @@ namespace TombLib.LevelData
                 case LightType.CausticsEffect:
                     // Dedicated runtime controller. It does not illuminate room geometry.
                     InnerRange = 0.0f;
-                    OuterRange = 5.0f;
+                    // Start with a localized reflection pool; artists can enlarge
+                    // the radius with the existing Outer Range editor control.
+                    OuterRange = 2.5f;
+                    Intensity = 0.35f;
                     IsDynamicallyUsed = true;
                     IsStaticallyUsed = false;
                     IsUsedForImportedGeometry = false;
