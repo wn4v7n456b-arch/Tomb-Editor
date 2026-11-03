@@ -50,6 +50,7 @@ namespace Asha.Editor.Caustics
                     Inherit = settings.Inherit
                 });
             }
+            TombEditor.Editor.Instance.HasUnsavedChanges = true;
         }
         public CausticsPanel Panel { get; }
         public SurfaceSelectionStore Selection { get; }
