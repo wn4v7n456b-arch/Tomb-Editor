@@ -49,6 +49,32 @@ namespace TombLib.LevelData.IO
                         level.ApplyNewLevelSettings(settings);
                         return true;
                     }
+                    else if (id == Prj2Chunks.AshaCaustics)
+                    {
+                        int count = chunkIO.Raw.ReadInt32();
+                        if (count < 0 || count > 1000000)
+                            throw new InvalidDataException("Invalid Caustics face count.");
+                        for (int i = 0; i < count; i++)
+                        {
+                            var face = new CausticsFaceRecord
+                            {
+                                RoomIndex = chunkIO.Raw.ReadInt32(),
+                                SectorX = chunkIO.Raw.ReadInt32(),
+                                SectorZ = chunkIO.Raw.ReadInt32(),
+                                Face = chunkIO.Raw.ReadStringUTF8(),
+                                Fade = chunkIO.Raw.ReadByte(),
+                                Brightness = chunkIO.Raw.ReadByte(),
+                                Red = chunkIO.Raw.ReadByte(),
+                                Green = chunkIO.Raw.ReadByte(),
+                                Blue = chunkIO.Raw.ReadByte(),
+                                Inherit = chunkIO.Raw.ReadBoolean()
+                            };
+                            if (face.Fade < 1 || face.Fade > 5 || face.Brightness < 1 || face.Brightness > 5)
+                                throw new InvalidDataException("Invalid Caustics settings.");
+                            level.CausticsFaces.Add(face);
+                        }
+                        return true;
+                    }
                     else if (LoadRooms(chunkIO, id, level, levelSettingsIds, progressReporter, cancelToken))
                         return true;
                     return false;
