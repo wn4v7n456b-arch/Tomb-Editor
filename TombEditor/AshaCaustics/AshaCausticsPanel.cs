@@ -25,6 +25,7 @@ namespace Asha.Editor.Caustics
         private readonly Button clear = new Button { Text = "Clear all painted faces", AutoSize = true };
 
         public bool IsSelecting => selection.Checked;
+        public void StopSelecting() => selection.Checked = false;
         public void SetPaintedFaceCount(int count) => paintedCount.Text = $"Painted faces: {count} (project saving not yet tested)";
         public bool Inherit => inherit.Checked;
         public bool Preview => preview.Checked;
