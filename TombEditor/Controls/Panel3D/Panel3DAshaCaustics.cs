@@ -3,6 +3,7 @@ using TombLib.Rendering;
 using TombLib.Utils;
 using TombLib.LevelData;
 using TombLib.LevelData.SectorEnums;
+using TombLib.LevelData.SectorGeometry;
 using TombLib.Graphics.Primitives;
 using SharpDX.Toolkit.Graphics;
 using System.Collections.Generic;
