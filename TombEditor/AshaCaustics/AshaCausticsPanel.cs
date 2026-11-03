@@ -1,0 +1,78 @@
+// Asha-specific Tomb Editor dock panel prototype.
+// Source reference: TombEditor.ToolWindows.Lighting / TexturePanel.
+// This is intentionally standalone until the editor solution is vendored or forked.
+// No lighting objects are created or modified here.
+using System;
+using System.Drawing;
+using System.Windows.Forms;
+
+namespace Asha.Editor.Caustics
+{
+    public sealed class CausticsPanel : UserControl
+    {
+        public event EventHandler SettingsChanged;
+        public event EventHandler SelectionModeChanged;
+        public event EventHandler ClearSelectionRequested;
+        public event EventHandler PreviewChanged;
+        public event EventHandler SaveRequested;
+        public event EventHandler LoadRequested;
+
+        private readonly CheckBox selection = new CheckBox { Text = "Select caustics surfaces", AutoSize = true };
+        private readonly CheckBox inherit = new CheckBox { Text = "Inherit across connected surfaces", AutoSize = true };
+        private readonly CheckBox preview = new CheckBox { Text = "Preview on textured geometry", AutoSize = true, Checked = true };
+        private readonly NumericUpDown fade = new NumericUpDown { Minimum = 1, Maximum = 5, Value = 1, Width = 64 };
+        private readonly NumericUpDown brightness = new NumericUpDown { Minimum = 1, Maximum = 5, Value = 3, Width = 64 };
+        private readonly Button tint = new Button { Text = "Caustics colour", AutoSize = true, BackColor = Color.White };
+        private readonly Button save = new Button { Text = "Save caustics selections...", AutoSize = true };
+        private readonly Button load = new Button { Text = "Load caustics selections...", AutoSize = true };
+        private readonly Button clear = new Button { Text = "Clear selected area", AutoSize = true };
+
+        public bool IsSelecting => selection.Checked;
+        public bool Inherit => inherit.Checked;
+        public bool Preview => preview.Checked;
+        public int EdgeFade => (int)fade.Value;
+        public int Brightness => (int)brightness.Value;
+        public Color Tint => tint.BackColor;
+
+        public CausticsPanel()
+        {
+            Dock = DockStyle.Fill;
+            var layout = new TableLayoutPanel {
+                Dock = DockStyle.Fill, AutoScroll = true, Padding = new Padding(8),
+                ColumnCount = 2, RowCount = 9
+            };
+            layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 65));
+            layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 35));
+            layout.Controls.Add(selection, 0, 0);
+            layout.SetColumnSpan(selection, 2);
+            layout.Controls.Add(inherit, 0, 1);
+            layout.SetColumnSpan(inherit, 2);
+            layout.Controls.Add(new Label { Text = "Edge fade (1 sharp - 5 soft)", AutoSize = true }, 0, 2);
+            layout.Controls.Add(fade, 1, 2);
+            layout.Controls.Add(new Label { Text = "Brightness (1 dull - 5 bright)", AutoSize = true }, 0, 3);
+            layout.Controls.Add(brightness, 1, 3);
+            layout.Controls.Add(tint, 0, 4);
+            layout.Controls.Add(preview, 0, 5);
+            layout.SetColumnSpan(preview, 2);
+            layout.Controls.Add(clear, 0, 6);
+            layout.Controls.Add(save, 0, 7);
+            layout.Controls.Add(load, 0, 8);
+            Controls.Add(layout);
+            save.Click += (s, e) => SaveRequested?.Invoke(this, EventArgs.Empty);
+            load.Click += (s, e) => LoadRequested?.Invoke(this, EventArgs.Empty);
+            selection.CheckedChanged += (s, e) => SelectionModeChanged?.Invoke(this, EventArgs.Empty);
+            inherit.CheckedChanged += (s, e) => SettingsChanged?.Invoke(this, EventArgs.Empty);
+            fade.ValueChanged += (s, e) => SettingsChanged?.Invoke(this, EventArgs.Empty);
+            brightness.ValueChanged += (s, e) => SettingsChanged?.Invoke(this, EventArgs.Empty);
+            preview.CheckedChanged += (s, e) => PreviewChanged?.Invoke(this, EventArgs.Empty);
+            clear.Click += (s, e) => ClearSelectionRequested?.Invoke(this, EventArgs.Empty);
+            tint.Click += (s, e) => {
+                using (var dialog = new ColorDialog { Color = tint.BackColor, FullOpen = true })
+                    if (dialog.ShowDialog(this) == DialogResult.OK) {
+                        tint.BackColor = dialog.Color;
+                        SettingsChanged?.Invoke(this, EventArgs.Empty);
+                    }
+            };
+        }
+    }
+}
