@@ -14,18 +14,14 @@ namespace Asha.Editor.Caustics
         public event EventHandler SelectionModeChanged;
         public event EventHandler ClearSelectionRequested;
         public event EventHandler PreviewChanged;
-        public event EventHandler SaveRequested;
-        public event EventHandler LoadRequested;
 
         private readonly Label paintedCount = new Label { Text = "Painted faces: 0 (not saved in project yet)", AutoSize = true };
         private readonly CheckBox selection = new CheckBox { Text = "Select caustics surfaces", AutoSize = true };
-        private readonly CheckBox inherit = new CheckBox { Text = "Inherit across connected surfaces", AutoSize = true };
-        private readonly CheckBox preview = new CheckBox { Text = "Preview on textured geometry", AutoSize = true, Checked = true };
-        private readonly NumericUpDown fade = new NumericUpDown { Minimum = 1, Maximum = 5, Value = 1, Width = 64 };
+        private readonly CheckBox inherit = new CheckBox { Text = "Inherit (not implemented)", AutoSize = true, Enabled = false };
+        private readonly CheckBox preview = new CheckBox { Text = "Textured preview (not implemented)", AutoSize = true, Checked = false, Enabled = false };
+        private readonly NumericUpDown fade = new NumericUpDown { Minimum = 1, Maximum = 5, Value = 3, Width = 64 };
         private readonly NumericUpDown brightness = new NumericUpDown { Minimum = 1, Maximum = 5, Value = 3, Width = 64 };
         private readonly Button tint = new Button { Text = "Caustics colour", AutoSize = true, BackColor = Color.White };
-        private readonly Button save = new Button { Text = "Save caustics selections...", AutoSize = true };
-        private readonly Button load = new Button { Text = "Load caustics selections...", AutoSize = true };
         private readonly Button clear = new Button { Text = "Clear selected area", AutoSize = true };
 
         public bool IsSelecting => selection.Checked;
@@ -62,8 +58,6 @@ namespace Asha.Editor.Caustics
             layout.Controls.Add(paintedCount, 0, 9);
             layout.SetColumnSpan(paintedCount, 2);
             Controls.Add(layout);
-            save.Click += (s, e) => SaveRequested?.Invoke(this, EventArgs.Empty);
-            load.Click += (s, e) => LoadRequested?.Invoke(this, EventArgs.Empty);
             selection.CheckedChanged += (s, e) => SelectionModeChanged?.Invoke(this, EventArgs.Empty);
             inherit.CheckedChanged += (s, e) => SettingsChanged?.Invoke(this, EventArgs.Empty);
             fade.ValueChanged += (s, e) => SettingsChanged?.Invoke(this, EventArgs.Empty);
