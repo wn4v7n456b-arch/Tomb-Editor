@@ -55,8 +55,8 @@ namespace Asha.Editor.Caustics
             layout.Controls.Add(preview, 0, 5);
             layout.SetColumnSpan(preview, 2);
             layout.Controls.Add(clear, 0, 6);
-            layout.Controls.Add(save, 0, 7);
-            layout.Controls.Add(load, 0, 8);
+
+
             Controls.Add(layout);
             save.Click += (s, e) => SaveRequested?.Invoke(this, EventArgs.Empty);
             load.Click += (s, e) => LoadRequested?.Invoke(this, EventArgs.Empty);
