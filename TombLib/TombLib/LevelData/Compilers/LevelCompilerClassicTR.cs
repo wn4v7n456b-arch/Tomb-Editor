@@ -159,6 +159,12 @@ namespace TombLib.LevelData.Compilers
                     throw new NotImplementedException("The selected game engine is not supported yet");
             }
 
+            // Export painted Caustics metadata as an additive, versioned sidecar.
+            // Source room indices are preserved here; the runtime must NOT treat
+            // them as compiled room indices until an explicit mapping is installed.
+            if (!cancelToken.IsCancellationRequested && _level.Settings.GameVersion == TRVersion.Game.TR4)
+                WriteAshaCausticsSidecar();
+
             // Needed to make decision about backup (delete or restore)
             _compiledSuccessfully = !cancelToken.IsCancellationRequested;
 
@@ -171,6 +177,72 @@ namespace TombLib.LevelData.Compilers
                 OverlapCount = _overlaps.Length,
                 ObjectTextureCount = _textureInfoManager.TexInfoCount,
             };
+        }
+
+        private void WriteAshaCausticsSidecar()
+        {
+            var output = _finalDest + ".acpf";
+            var faces = _level.CausticsFaces;
+            if (faces.Count == 0)
+            {
+                // Avoid carrying painted areas from a previous compilation.
+                if (File.Exists(output))
+                    File.Delete(output);
+                return;
+            }
+
+            // Validate before touching the existing sidecar.
+            var records = new List<(uint room, uint x, uint z, uint face, CausticsFaceRecord settings)>();
+            foreach (var record in faces)
+            {
+                if (record.RoomIndex < 0 || record.RoomIndex >= _level.Rooms.Length ||
+                    _level.Rooms[record.RoomIndex] == null ||
+                    record.SectorX < 0 || record.SectorZ < 0 ||
+                    record.SectorX >= _level.Rooms[record.RoomIndex].NumXSectors ||
+                    record.SectorZ >= _level.Rooms[record.RoomIndex].NumZSectors ||
+                    record.Fade < 1 || record.Fade > 5 ||
+                    record.Brightness < 1 || record.Brightness > 5 ||
+                    !Enum.TryParse(record.Face, out SectorFace face) ||
+                    !Enum.IsDefined(typeof(SectorFace), face))
+                    throw new InvalidDataException("Invalid painted Caustics face in level.");
+                records.Add(((uint)record.RoomIndex, (uint)record.SectorX,
+                    (uint)record.SectorZ, Convert.ToUInt32(face), record));
+            }
+
+            string temp = output + ".tmp";
+            try
+            {
+                using (var stream = File.Create(temp))
+                using (var writer = new BinaryWriter(stream))
+                {
+                    writer.Write(new byte[] { (byte)'A', (byte)'C', (byte)'P', (byte)'F' });
+                    writer.Write((uint)1);
+                    writer.Write((uint)records.Count);
+                    foreach (var item in records)
+                    {
+                        writer.Write(item.room);
+                        writer.Write(item.x);
+                        writer.Write(item.z);
+                        writer.Write(item.face);
+                        writer.Write(item.settings.Fade);
+                        writer.Write(item.settings.Brightness);
+                        writer.Write(item.settings.Red);
+                        writer.Write(item.settings.Green);
+                        writer.Write(item.settings.Blue);
+                        writer.Write((byte)(item.settings.Inherit ? 1 : 0));
+                    }
+                }
+                if (File.Exists(output))
+                    File.Delete(output);
+                File.Move(temp, output);
+            }
+            finally
+            {
+                if (File.Exists(temp))
+                    File.Delete(temp);
+            }
+            _progressReporter.ReportInfo("Painted Caustics sidecar: " + output +
+                " (" + records.Count + " faces, source room indices)");
         }
 
         private void WritePlugins()
