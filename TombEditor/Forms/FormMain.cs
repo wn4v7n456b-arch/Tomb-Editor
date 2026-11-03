@@ -14,6 +14,7 @@ using TombLib.Forms;
 using TombLib.LevelData;
 using TombLib.Utils;
 using TombEditor.ToolWindows;
+using Asha.Editor.Caustics;
 
 namespace TombEditor.Forms
 {
@@ -21,6 +22,38 @@ namespace TombEditor.Forms
     {
         private static readonly Logger logger = LogManager.GetCurrentClassLogger();
         private readonly Editor _editor;
+
+        private Form _ashaCausticsForm;
+        private CausticsEditorController _ashaCausticsController;
+
+        private void ShowAshaCausticsPanel()
+        {
+            if (_ashaCausticsForm != null && !_ashaCausticsForm.IsDisposed)
+            {
+                _ashaCausticsForm.Show();
+                _ashaCausticsForm.BringToFront();
+                return;
+            }
+            var panel = new CausticsPanel();
+            _ashaCausticsController = new CausticsEditorController(panel, new SurfaceSelectionStore());
+            _ashaCausticsForm = new Form
+            {
+                Text = "Asha | Caustics",
+                Width = 380,
+                Height = 420,
+                StartPosition = FormStartPosition.CenterParent
+            };
+            _ashaCausticsForm.Controls.Add(panel);
+            _ashaCausticsForm.FormClosing += (sender, args) =>
+            {
+                if (args.CloseReason == CloseReason.UserClosing)
+                {
+                    args.Cancel = true;
+                    _ashaCausticsForm.Hide();
+                }
+            };
+            _ashaCausticsForm.Show(this);
+        }
 
         // Full-screen mode is temporary; never persist its borderless geometry.
         private bool _ashaFullScreen;
@@ -125,6 +158,17 @@ namespace TombEditor.Forms
             GetWindow<MainView>().InitializeRendering(_editor.RenderingDevice);
             GetWindow<ItemBrowser>().InitializeRendering(_editor.RenderingDevice);
             GetWindow<ImportedGeometryBrowser>().InitializeRendering(_editor.RenderingDevice);
+
+            // Asha Caustics: explicit visible entry point in the existing editor.
+            // No hidden shortcut or separate executable required.
+            var ashaCausticsMenu = new ToolStripMenuItem
+            {
+                Name = "ashaCausticsMenu",
+                Text = "CAUSTICS",
+                ToolTipText = "Open Asha caustics surface authoring controls"
+            };
+            ashaCausticsMenu.Click += (sender, args) => ShowAshaCausticsPanel();
+            menuStrip.Items.Add(ashaCausticsMenu);
 
             // Asha Expedition: prominent one-click build-and-play action.
             var ashaPlayButton = new ToolStripMenuItem
