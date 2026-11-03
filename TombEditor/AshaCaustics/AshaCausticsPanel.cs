@@ -15,7 +15,7 @@ namespace Asha.Editor.Caustics
         public event EventHandler ClearSelectionRequested;
         public event EventHandler PreviewChanged;
 
-        private readonly Label paintedCount = new Label { Text = "Painted faces: 0 (not saved in project yet)", AutoSize = true };
+        private readonly Label paintedCount = new Label { Text = "Painted faces: 0 (project saving not yet tested)", AutoSize = true };
         private readonly CheckBox selection = new CheckBox { Text = "Select caustics surfaces", AutoSize = true };
         private readonly CheckBox inherit = new CheckBox { Text = "Inherit (not implemented)", AutoSize = true, Enabled = false };
         private readonly CheckBox preview = new CheckBox { Text = "Textured preview (not implemented)", AutoSize = true, Checked = false, Enabled = false };
@@ -25,7 +25,7 @@ namespace Asha.Editor.Caustics
         private readonly Button clear = new Button { Text = "Clear selected area", AutoSize = true };
 
         public bool IsSelecting => selection.Checked;
-        public void SetPaintedFaceCount(int count) => paintedCount.Text = $"Painted faces: {count} (not saved in project yet)";
+        public void SetPaintedFaceCount(int count) => paintedCount.Text = $"Painted faces: {count} (project saving not yet tested)";
         public bool Inherit => inherit.Checked;
         public bool Preview => preview.Checked;
         public int EdgeFade => (int)fade.Value;
