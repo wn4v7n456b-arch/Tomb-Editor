@@ -51,6 +51,7 @@ namespace TombEditor.Forms
                 if (args.CloseReason == CloseReason.UserClosing)
                 {
                     args.Cancel = true;
+                    panel.StopSelecting();
                     _ashaCausticsForm.Hide();
                 }
             };
