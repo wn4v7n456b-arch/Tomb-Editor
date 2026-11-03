@@ -31,7 +31,11 @@ namespace TombEditor.Controls.Panel3D
 
         private void DrawAshaCausticsOverlay(Effect effect)
         {
-            if (_ashaCausticsController == null || !_ashaCausticsController.ShowPurpleSelection ||
+            // Solid purple is a geometry-selection aid ONLY. Never paint it
+            // over textured or lighting views; those require a separate
+            // static caustics texture pass (not the selection overlay).
+            if (_editor.Mode != EditorMode.Geometry ||
+                _ashaCausticsController == null || !_ashaCausticsController.ShowPurpleSelection ||
                 _editor.Level == null || _ashaCausticsController.Selection.Selected.Count == 0)
                 return;
 
