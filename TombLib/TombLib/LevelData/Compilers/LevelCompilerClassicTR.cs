@@ -205,7 +205,12 @@ namespace TombLib.LevelData.Compilers
                     !Enum.TryParse(record.Face, out SectorFace face) ||
                     !Enum.IsDefined(typeof(SectorFace), face))
                     throw new InvalidDataException("Invalid painted Caustics face in level.");
-                records.Add(((uint)record.RoomIndex, (uint)record.SectorX,
+                // The playable TR4 uses the rearranged room order, not the
+                // editor's source-room array index. Resolve by room identity.
+                int compiledRoomIndex = Array.IndexOf(_sortedRooms, _level.Rooms[record.RoomIndex]);
+                if (compiledRoomIndex < 0)
+                    throw new InvalidDataException("Painted Caustics room missing from compiled room order.");
+                records.Add(((uint)compiledRoomIndex, (uint)record.SectorX,
                     (uint)record.SectorZ, Convert.ToUInt32(face), record));
             }
 
@@ -242,7 +247,7 @@ namespace TombLib.LevelData.Compilers
                     File.Delete(temp);
             }
             _progressReporter.ReportInfo("Painted Caustics sidecar: " + output +
-                " (" + records.Count + " faces, source room indices)");
+                " (" + records.Count + " faces, compiled room indices)");
         }
 
         private void WritePlugins()
