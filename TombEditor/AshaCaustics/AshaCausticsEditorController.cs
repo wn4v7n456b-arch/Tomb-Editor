@@ -4,12 +4,53 @@
 using System;
 using System.Drawing;
 using System.IO;
+using System.Linq;
+using TombLib.LevelData;
 using System.Windows.Forms;
 
 namespace Asha.Editor.Caustics
 {
     public sealed class CausticsEditorController : IDisposable
     {
+        private Level _boundLevel;
+        private bool _loadingLevel;
+        public void BindLevel(Level level)
+        {
+            if (ReferenceEquals(_boundLevel, level)) return;
+            _boundLevel = level;
+            _loadingLevel = true;
+            try
+            {
+                Selection.ReplaceAll(level.CausticsFaces.Select(face =>
+                    new System.Collections.Generic.KeyValuePair<SurfaceKey, SurfaceSettings>(
+                        new SurfaceKey(face.RoomIndex.ToString(), face.SectorX, face.SectorZ, face.Face),
+                        new SurfaceSettings {
+                            Fade = face.Fade, Brightness = face.Brightness,
+                            Red = face.Red, Green = face.Green, Blue = face.Blue,
+                            Inherit = face.Inherit
+                        })));
+            }
+            finally { _loadingLevel = false; }
+        }
+        private void SyncToLevel(object sender, EventArgs e)
+        {
+            if (_loadingLevel || _boundLevel == null) return;
+            _boundLevel.CausticsFaces.Clear();
+            foreach (var entry in Selection.Selected)
+            {
+                if (!int.TryParse(entry.Key.RoomId, out int roomIndex) ||
+                    roomIndex < 0 || roomIndex >= _boundLevel.Rooms.Length ||
+                    _boundLevel.Rooms[roomIndex] == null) continue;
+                var settings = entry.Value;
+                _boundLevel.CausticsFaces.Add(new CausticsFaceRecord {
+                    RoomIndex = roomIndex, SectorX = entry.Key.SectorX,
+                    SectorZ = entry.Key.SectorZ, Face = entry.Key.Face,
+                    Fade = (byte)settings.Fade, Brightness = (byte)settings.Brightness,
+                    Red = settings.Red, Green = settings.Green, Blue = settings.Blue,
+                    Inherit = settings.Inherit
+                });
+            }
+        }
         public CausticsPanel Panel { get; }
         public SurfaceSelectionStore Selection { get; }
         public bool ShowPurpleSelection => Panel.IsSelecting;
@@ -26,6 +67,7 @@ namespace Asha.Editor.Caustics
             Panel.ClearSelectionRequested += OnClear;
             Selection.Changed += OnPanelChanged;
             Selection.Changed += UpdatePaintedCount;
+            Selection.Changed += SyncToLevel;
             Panel.SetPaintedFaceCount(Selection.Selected.Count);
         }
         private void UpdatePaintedCount(object sender, EventArgs e) => Panel.SetPaintedFaceCount(Selection.Selected.Count);
@@ -71,6 +113,7 @@ namespace Asha.Editor.Caustics
             Panel.ClearSelectionRequested -= OnClear;
             Selection.Changed -= OnPanelChanged;
             Selection.Changed -= UpdatePaintedCount;
+            Selection.Changed -= SyncToLevel;
         }
     }
 }
