@@ -17,6 +17,7 @@ namespace Asha.Editor.Caustics
         public event EventHandler SaveRequested;
         public event EventHandler LoadRequested;
 
+        private readonly Label paintedCount = new Label { Text = "Painted faces: 0 (not saved in project yet)", AutoSize = true };
         private readonly CheckBox selection = new CheckBox { Text = "Select caustics surfaces", AutoSize = true };
         private readonly CheckBox inherit = new CheckBox { Text = "Inherit across connected surfaces", AutoSize = true };
         private readonly CheckBox preview = new CheckBox { Text = "Preview on textured geometry", AutoSize = true, Checked = true };
@@ -28,6 +29,7 @@ namespace Asha.Editor.Caustics
         private readonly Button clear = new Button { Text = "Clear selected area", AutoSize = true };
 
         public bool IsSelecting => selection.Checked;
+        public void SetPaintedFaceCount(int count) => paintedCount.Text = $"Painted faces: {count} (not saved in project yet)";
         public bool Inherit => inherit.Checked;
         public bool Preview => preview.Checked;
         public int EdgeFade => (int)fade.Value;
@@ -39,7 +41,7 @@ namespace Asha.Editor.Caustics
             Dock = DockStyle.Fill;
             var layout = new TableLayoutPanel {
                 Dock = DockStyle.Fill, AutoScroll = true, Padding = new Padding(8),
-                ColumnCount = 2, RowCount = 9
+                ColumnCount = 2, RowCount = 10
             };
             layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 65));
             layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 35));
@@ -57,6 +59,8 @@ namespace Asha.Editor.Caustics
             layout.Controls.Add(clear, 0, 6);
 
 
+            layout.Controls.Add(paintedCount, 0, 9);
+            layout.SetColumnSpan(paintedCount, 2);
             Controls.Add(layout);
             save.Click += (s, e) => SaveRequested?.Invoke(this, EventArgs.Empty);
             load.Click += (s, e) => LoadRequested?.Invoke(this, EventArgs.Empty);
