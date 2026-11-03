@@ -77,8 +77,11 @@ namespace TombLib.LevelData.IO
                 WriteRooms(chunkIO, rooms, levelSettingIds);
                 using (var causticsChunk = chunkIO.WriteChunk(Prj2Chunks.AshaCaustics, long.MaxValue))
                 {
-                    chunkIO.Raw.Write(level.CausticsFaces.Count);
-                    foreach (var face in level.CausticsFaces)
+                    var savedFaces = level.CausticsFaces.Where(face =>
+                        face.RoomIndex >= 0 && face.RoomIndex < level.Rooms.Length &&
+                        level.Rooms[face.RoomIndex] != null && rooms.ContainsKey(level.Rooms[face.RoomIndex])).ToList();
+                    chunkIO.Raw.Write(savedFaces.Count);
+                    foreach (var face in savedFaces)
                     {
                         chunkIO.Raw.Write(face.RoomIndex);
                         chunkIO.Raw.Write(face.SectorX);
