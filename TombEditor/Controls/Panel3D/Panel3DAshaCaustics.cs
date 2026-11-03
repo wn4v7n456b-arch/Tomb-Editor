@@ -24,12 +24,18 @@ namespace TombEditor.Controls.Panel3D
             if (_ashaCausticsController == null || !_ashaCausticsController.Panel.IsSelecting)
                 return false;
             var picked = DoPicking(GetRay(x, y), true) as PickingResultSector;
-            if (picked != null && picked.Room != null)
+            if (picked != null && picked.Room != null && _editor.Level != null)
             {
-                if (erase)
-                    _ashaCausticsController.ErasePickedFace(Array.IndexOf(_editor.Level.Rooms, picked.Room).ToString(), picked.Pos.X, picked.Pos.Y, picked.Face.ToString());
-                else
-                    _ashaCausticsController.PaintPickedFace(picked.Room.Name, picked.Pos.X, picked.Pos.Y, picked.Face.ToString());
+                int roomIndex = Array.IndexOf(_editor.Level.Rooms, picked.Room);
+                if (roomIndex >= 0)
+                {
+                    string roomId = roomIndex.ToString();
+                    string faceId = picked.Face.ToString();
+                    if (erase)
+                        _ashaCausticsController.ErasePickedFace(roomId, picked.Pos.X, picked.Pos.Y, faceId);
+                    else
+                        _ashaCausticsController.PaintPickedFace(roomId, picked.Pos.X, picked.Pos.Y, faceId);
+                }
             }
             return true;
         }
