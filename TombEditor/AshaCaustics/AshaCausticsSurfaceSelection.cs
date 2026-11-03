@@ -40,7 +40,7 @@ namespace Asha.Editor.Caustics
 
     public sealed class SurfaceSettings
     {
-        public int Fade { get; set; } = 1;
+        public int Fade { get; set; } = 3;
         public int Brightness { get; set; } = 3;
         public byte Red { get; set; } = 255;
         public byte Green { get; set; } = 255;
@@ -96,6 +96,11 @@ namespace Asha.Editor.Caustics
         {
             if (settings == null) throw new ArgumentNullException(nameof(settings));
             settings.Validate();
+            if (selected.TryGetValue(key, out var existing) &&
+                existing.Fade == settings.Fade && existing.Brightness == settings.Brightness &&
+                existing.Red == settings.Red && existing.Green == settings.Green &&
+                existing.Blue == settings.Blue && existing.Inherit == settings.Inherit)
+                return false;
             RecordChange();
             selected[key] = settings.Copy();
             Changed?.Invoke(this, EventArgs.Empty);
