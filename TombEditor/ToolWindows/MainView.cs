@@ -48,6 +48,11 @@ namespace TombEditor.ToolWindows
             panel3D.InitializeRendering(device, _editor.Configuration.Rendering3D_Antialias, (TombLib.Controls.ObjectRenderingQuality)_editor.Configuration.Rendering3D_ObjectQuality);
         }
 
+        public void AttachAshaCaustics(Asha.Editor.Caustics.CausticsEditorController controller)
+        {
+            panel3D.AttachAshaCaustics(controller);
+        }
+
         public void AddToolbox(DarkFloatingToolbox toolbox)
         {
             if (!panel3D.Contains(toolbox))
