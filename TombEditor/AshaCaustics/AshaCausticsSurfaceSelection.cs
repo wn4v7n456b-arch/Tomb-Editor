@@ -59,18 +59,53 @@ namespace Asha.Editor.Caustics
         private readonly Dictionary<SurfaceKey, SurfaceSettings> selected =
             new Dictionary<SurfaceKey, SurfaceSettings>();
         public IReadOnlyDictionary<SurfaceKey, SurfaceSettings> Selected => selected;
+        private readonly Stack<Dictionary<SurfaceKey, SurfaceSettings>> undo = new Stack<Dictionary<SurfaceKey, SurfaceSettings>>();
+        private readonly Stack<Dictionary<SurfaceKey, SurfaceSettings>> redo = new Stack<Dictionary<SurfaceKey, SurfaceSettings>>();
+        public bool CanUndo => undo.Count > 0;
+        public bool CanRedo => redo.Count > 0;
+        private Dictionary<SurfaceKey, SurfaceSettings> Snapshot() =>
+            selected.ToDictionary(entry => entry.Key, entry => entry.Value.Copy());
+        private void RecordChange()
+        {
+            undo.Push(Snapshot());
+            redo.Clear();
+        }
+        private void Restore(Dictionary<SurfaceKey, SurfaceSettings> snapshot)
+        {
+            selected.Clear();
+            foreach (var entry in snapshot)
+                selected.Add(entry.Key, entry.Value.Copy());
+            Changed?.Invoke(this, EventArgs.Empty);
+        }
+        public bool Undo()
+        {
+            if (!CanUndo) return false;
+            redo.Push(Snapshot());
+            Restore(undo.Pop());
+            return true;
+        }
+        public bool Redo()
+        {
+            if (!CanRedo) return false;
+            undo.Push(Snapshot());
+            Restore(redo.Pop());
+            return true;
+        }
         public event EventHandler Changed;
         public bool Paint(SurfaceKey key, SurfaceSettings settings)
         {
             if (settings == null) throw new ArgumentNullException(nameof(settings));
             settings.Validate();
+            RecordChange();
             selected[key] = settings.Copy();
             Changed?.Invoke(this, EventArgs.Empty);
             return true;
         }
         public bool Erase(SurfaceKey key)
         {
-            if (!selected.Remove(key)) return false;
+            if (!selected.ContainsKey(key)) return false;
+            RecordChange();
+            selected.Remove(key);
             Changed?.Invoke(this, EventArgs.Empty);
             return true;
         }
@@ -84,6 +119,7 @@ namespace Asha.Editor.Caustics
                 entry.Value.Validate();
                 next.Add(entry.Key, entry.Value.Copy());
             }
+            RecordChange();
             selected.Clear();
             foreach (var entry in next) selected.Add(entry.Key, entry.Value);
             Changed?.Invoke(this, EventArgs.Empty);
@@ -91,6 +127,7 @@ namespace Asha.Editor.Caustics
         public void Clear()
         {
             if (selected.Count == 0) return;
+            RecordChange();
             selected.Clear();
             Changed?.Invoke(this, EventArgs.Empty);
         }
