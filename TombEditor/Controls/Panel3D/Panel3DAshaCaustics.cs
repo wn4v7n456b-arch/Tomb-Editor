@@ -31,15 +31,18 @@ namespace TombEditor.Controls.Panel3D
 
         private void DrawAshaCausticsOverlay(Effect effect)
         {
-            // Solid purple is a geometry-selection aid ONLY. Never paint it
-            // over textured or lighting views; those require a separate
-            // static caustics texture pass (not the selection overlay).
-            if (_editor.Mode != EditorMode.Geometry ||
-                _ashaCausticsController == null || !_ashaCausticsController.ShowPurpleSelection ||
-                _editor.Level == null || _ashaCausticsController.Selection.Selected.Count == 0)
+            if (_ashaCausticsController == null || _editor.Level == null ||
+                _ashaCausticsController.Selection.Selected.Count == 0)
                 return;
 
-            var vertices = new List<SolidVertex>();
+            bool geometry = _editor.Mode == EditorMode.Geometry;
+            bool preview = _editor.Mode == EditorMode.FaceEdit ||
+                           _editor.Mode == EditorMode.Lighting;
+            if (!geometry && !preview)
+                return;
+
+            var selected = new List<SolidVertex>();
+            var highlights = new List<SolidVertex>();
             foreach (var entry in _ashaCausticsController.Selection.Selected)
             {
                 if (!int.TryParse(entry.Key.RoomId, out int roomIndex) ||
@@ -54,30 +57,68 @@ namespace TombEditor.Controls.Panel3D
                 if (!room.RoomGeometry.VertexRangeLookup.TryGetValue(identity, out var range))
                     continue;
 
-                var roomOffset = room.WorldPos;
-                for (int i = range.Start; i < range.Start + range.Count; i++)
+                Vector3 offset = new Vector3(room.WorldPos.X, room.WorldPos.Y, room.WorldPos.Z);
+                if (geometry)
                 {
-                    Vector3 position = room.RoomGeometry.VertexPositions[i] +
-                        new Vector3(roomOffset.X, roomOffset.Y, roomOffset.Z);
-                    vertices.Add(new SolidVertex(position));
+                    if (!_ashaCausticsController.ShowPurpleSelection)
+                        continue;
+                    for (int i = range.Start; i < range.Start + range.Count; i++)
+                        selected.Add(new SolidVertex(room.RoomGeometry.VertexPositions[i] + offset));
+                }
+                else
+                {
+                    // Static preview: narrow bright ribbons tessellated on the
+                    // existing surface, never the purple selection material.
+                    // This preview is intentionally static; gameplay animation
+                    // belongs in the game renderer.
+                    const int divisions = 18;
+                    for (int i = range.Start; i + 2 < range.Start + range.Count; i += 3)
+                    {
+                        Vector3 a = room.RoomGeometry.VertexPositions[i] + offset;
+                        Vector3 b = room.RoomGeometry.VertexPositions[i + 1] + offset;
+                        Vector3 d = room.RoomGeometry.VertexPositions[i + 2] + offset;
+                        for (int u = 0; u < divisions; u++)
+                            for (int v = 0; v < divisions - u; v++)
+                            {
+                                Vector3 p = a + (b - a) * (u / (float)divisions) +
+                                            (d - a) * (v / (float)divisions);
+                                Vector3 q = a + (b - a) * ((u + 1) / (float)divisions) +
+                                            (d - a) * (v / (float)divisions);
+                                Vector3 s = a + (b - a) * (u / (float)divisions) +
+                                            (d - a) * ((v + 1) / (float)divisions);
+                                // World-space waves continue across neighbouring
+                                // faces instead of restarting at each triangle.
+                                Vector3 mid = (p + q + s) / 3.0f;
+                                float wave = (float)(Math.Sin(mid.X * 0.018 + mid.Z * 0.012 +
+                                    mid.Y * 0.006) * Math.Sin(mid.X * 0.011 -
+                                    mid.Z * 0.021 + mid.Y * 0.008));
+                                if (wave > 0.34f)
+                                {
+                                    highlights.Add(new SolidVertex(p));
+                                    highlights.Add(new SolidVertex(q));
+                                    highlights.Add(new SolidVertex(s));
+                                }
+                            }
+                    }
                 }
             }
+
+            var vertices = geometry ? selected : highlights;
             if (vertices.Count == 0)
                 return;
-
             using (var buffer = SharpDX.Toolkit.Graphics.Buffer.Vertex.New(
                 _legacyDevice, vertices.ToArray(), SharpDX.Direct3D11.ResourceUsage.Dynamic))
             {
-                _legacyDevice.SetBlendState(_legacyDevice.BlendStates.Opaque);
+                _legacyDevice.SetBlendState(geometry ? _legacyDevice.BlendStates.Opaque :
+                    _legacyDevice.BlendStates.AlphaBlend);
                 _legacyDevice.SetDepthStencilState(_legacyDevice.DepthStencilStates.DepthRead);
-                // Match the editor's existing depth-biased surface highlight state.
-                // Coplanar triangles otherwise fight the textured wall depth buffer,
-                // producing the reported purple speckle/fuzz.
                 _legacyDevice.SetRasterizerState(_rasterizerStateDepthBias);
                 _legacyDevice.SetVertexBuffer(buffer);
                 _legacyDevice.SetVertexInputLayout(VertexInputLayout.FromBuffer(0, buffer));
                 effect.Parameters["ModelViewProjection"].SetValue(_viewProjection.ToSharpDX());
-                effect.Parameters["Color"].SetValue(new Vector4(0.72f, 0.0f, 1.0f, 1.0f));
+                effect.Parameters["Color"].SetValue(geometry
+                    ? new Vector4(0.72f, 0.0f, 1.0f, 1.0f)
+                    : new Vector4(0.82f, 0.94f, 1.0f, 0.32f));
                 effect.CurrentTechnique.Passes[0].Apply();
                 _legacyDevice.Draw(PrimitiveType.TriangleList, buffer.ElementCount);
                 _legacyDevice.SetBlendState(_legacyDevice.BlendStates.Opaque);
