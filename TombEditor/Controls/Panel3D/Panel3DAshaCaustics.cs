@@ -1,5 +1,6 @@
 using System;
 using TombLib.Rendering;
+using TombLib.Utils;
 using TombLib.LevelData;
 using TombLib.LevelData.SectorEnums;
 using TombLib.Graphics.Primitives;
