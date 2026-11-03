@@ -36,6 +36,7 @@ namespace TombEditor.Forms
             }
             var panel = new CausticsPanel();
             _ashaCausticsController = new CausticsEditorController(panel, new SurfaceSelectionStore());
+            _ashaCausticsController.BindLevel(_editor.Level);
             GetWindow<MainView>().AttachAshaCaustics(_ashaCausticsController);
             _ashaCausticsForm = new Form
             {
