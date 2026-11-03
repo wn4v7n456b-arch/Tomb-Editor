@@ -22,7 +22,7 @@ namespace Asha.Editor.Caustics
         private readonly NumericUpDown fade = new NumericUpDown { Minimum = 1, Maximum = 5, Value = 3, Width = 64 };
         private readonly NumericUpDown brightness = new NumericUpDown { Minimum = 1, Maximum = 5, Value = 3, Width = 64 };
         private readonly Button tint = new Button { Text = "Caustics colour", AutoSize = true, BackColor = Color.White };
-        private readonly Button clear = new Button { Text = "Clear selected area", AutoSize = true };
+        private readonly Button clear = new Button { Text = "Clear all painted faces", AutoSize = true };
 
         public bool IsSelecting => selection.Checked;
         public void SetPaintedFaceCount(int count) => paintedCount.Text = $"Painted faces: {count} (project saving not yet tested)";
