@@ -75,6 +75,23 @@ namespace TombLib.LevelData.IO
 
                 // Write rooms
                 WriteRooms(chunkIO, rooms, levelSettingIds);
+                using (var causticsChunk = chunkIO.WriteChunk(Prj2Chunks.AshaCaustics, long.MaxValue))
+                {
+                    chunkIO.Raw.Write(level.CausticsFaces.Count);
+                    foreach (var face in level.CausticsFaces)
+                    {
+                        chunkIO.Raw.Write(face.RoomIndex);
+                        chunkIO.Raw.Write(face.SectorX);
+                        chunkIO.Raw.Write(face.SectorZ);
+                        chunkIO.Raw.WriteStringUTF8(face.Face);
+                        chunkIO.Raw.Write(face.Fade);
+                        chunkIO.Raw.Write(face.Brightness);
+                        chunkIO.Raw.Write(face.Red);
+                        chunkIO.Raw.Write(face.Green);
+                        chunkIO.Raw.Write(face.Blue);
+                        chunkIO.Raw.Write(face.Inherit);
+                    }
+                }
                 chunkIO.WriteChunkEnd();
             }
         }
