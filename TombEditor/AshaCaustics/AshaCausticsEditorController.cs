@@ -3,10 +3,8 @@
 // This file deliberately does not claim that viewport hooking is complete.
 using System;
 using System.Drawing;
-using System.IO;
 using System.Linq;
 using TombLib.LevelData;
-using System.Windows.Forms;
 
 namespace Asha.Editor.Caustics
 {
@@ -21,7 +19,7 @@ namespace Asha.Editor.Caustics
             _loadingLevel = true;
             try
             {
-                Selection.ReplaceAll(level.CausticsFaces.Select(face =>
+                Selection.ReplaceAll((level?.CausticsFaces ?? Enumerable.Empty<CausticsFaceRecord>()).Select(face =>
                     new System.Collections.Generic.KeyValuePair<SurfaceKey, SurfaceSettings>(
                         new SurfaceKey(face.RoomIndex.ToString(), face.SectorX, face.SectorZ, face.Face),
                         new SurfaceSettings {
@@ -75,20 +73,6 @@ namespace Asha.Editor.Caustics
         private void OnPanelChanged(object sender, EventArgs e) =>
             ViewportRefreshRequested?.Invoke(this, EventArgs.Empty);
         private void OnClear(object sender, EventArgs e) => Selection.Clear();
-        private void OnSave(object sender, EventArgs e)
-        {
-            using (var dialog = new SaveFileDialog { Filter = "Asha caustics selections (*.acsf)|*.acsf", DefaultExt = "acsf", AddExtension = true })
-                if (dialog.ShowDialog(Panel) == DialogResult.OK)
-                    using (var writer = new StreamWriter(dialog.FileName))
-                        CausticsSelectionFile.Save(writer, Selection);
-        }
-        private void OnLoad(object sender, EventArgs e)
-        {
-            using (var dialog = new OpenFileDialog { Filter = "Asha caustics selections (*.acsf)|*.acsf", CheckFileExists = true })
-                if (dialog.ShowDialog(Panel) == DialogResult.OK)
-                    using (var reader = new StreamReader(dialog.FileName))
-                        CausticsSelectionFile.Load(reader, Selection);
-        }
         public void PaintPickedFace(string stableRoomId, int sectorX, int sectorZ, string face)
         {
             if (!Panel.IsSelecting) return;
