@@ -27,7 +27,7 @@ namespace TombEditor.Controls.Panel3D
             if (picked != null && picked.Room != null)
             {
                 if (erase)
-                    _ashaCausticsController.ErasePickedFace(picked.Room.Name, picked.Pos.X, picked.Pos.Y, picked.Face.ToString());
+                    _ashaCausticsController.ErasePickedFace(Array.IndexOf(_editor.Level.Rooms, picked.Room).ToString(), picked.Pos.X, picked.Pos.Y, picked.Face.ToString());
                 else
                     _ashaCausticsController.PaintPickedFace(picked.Room.Name, picked.Pos.X, picked.Pos.Y, picked.Face.ToString());
             }
