@@ -319,6 +319,23 @@ namespace TombEditor.Controls
             if (currentSectorColoringInfos == null)
                 return;
 
+            bool caustics = _editor.Level?.CausticsFaces != null &&
+                _editor.Level.CausticsFaces.Any(face => face.RoomIndex >= 0 &&
+                    face.RoomIndex < _editor.Level.Rooms.Length &&
+                    ReferenceEquals(_editor.Level.Rooms[face.RoomIndex], Room) &&
+                    face.SectorX == x && face.SectorZ == z);
+            // Place the tint over the base floor colour, but underneath the
+            // trigger/portal/attribute symbols drawn later in this method.
+            bool causticsPainted = false;
+            Action paintCaustics = () => {
+                if (!caustics || causticsPainted) return;
+                using (var brush = new SolidBrush(Color.FromArgb(170, 112, 32, 160)))
+                    e.Graphics.FillRectangle(brush, sectorArea);
+                causticsPainted = true;
+            };
+            if (currentSectorColoringInfos.Count == 0 ||
+                currentSectorColoringInfos[0].Shape != SectorColoringShape.Rectangle)
+                paintCaustics();
             for (int i = 0; i < currentSectorColoringInfos.Count; i++)
             {
                 e.Graphics.SmoothingMode = currentSectorColoringInfos[i].Shape == SectorColoringShape.Rectangle ? SmoothingMode.Default : SmoothingMode.AntiAlias;
@@ -328,6 +345,7 @@ namespace TombEditor.Controls
                     case SectorColoringShape.Rectangle:
                         using (var b = new SolidBrush(currentSectorColoringInfos[i].Color.ToWinFormsColor()))
                             e.Graphics.FillRectangle(b, sectorArea);
+                        paintCaustics();
                         break;
                     case SectorColoringShape.Frame:
                         RectangleF frameAttribRect = sectorArea;
