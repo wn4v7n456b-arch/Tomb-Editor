@@ -109,7 +109,7 @@ namespace Asha.Editor.Caustics
             Changed?.Invoke(this, EventArgs.Empty);
             return true;
         }
-        public void ReplaceAll(IEnumerable<KeyValuePair<SurfaceKey, SurfaceSettings>> entries)
+        public void ReplaceAll(IEnumerable<KeyValuePair<SurfaceKey, SurfaceSettings>> entries, bool resetHistory = false)
         {
             if (entries == null) throw new ArgumentNullException(nameof(entries));
             var next = new Dictionary<SurfaceKey, SurfaceSettings>();
@@ -119,7 +119,13 @@ namespace Asha.Editor.Caustics
                 entry.Value.Validate();
                 next.Add(entry.Key, entry.Value.Copy());
             }
-            RecordChange();
+            if (resetHistory)
+            {
+                undo.Clear();
+                redo.Clear();
+            }
+            else
+                RecordChange();
             selected.Clear();
             foreach (var entry in next) selected.Add(entry.Key, entry.Value);
             Changed?.Invoke(this, EventArgs.Empty);
