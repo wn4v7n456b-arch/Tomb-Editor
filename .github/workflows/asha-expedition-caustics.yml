@@ -1,0 +1,24 @@
+name: Asha Expedition Caustics Build
+on:
+  push:
+    branches: [feature/asha-caustics-effect]
+  workflow_dispatch:
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '6.0.x'
+      - uses: microsoft/setup-msbuild@v2
+      - name: Build actual Expedition Level Editor
+        shell: pwsh
+        run: msbuild TombEditor/TombEditor.csproj /restore /p:Configuration=Release /p:Platform=x64 /m:1 /verbosity:minimal
+      - name: Upload Expedition Editor build
+        uses: actions/upload-artifact@v4
+        with:
+          name: Asha-Expedition-Caustics-Editor
+          path: BuildRelease (x64)/net6.0-windows/
+          if-no-files-found: error
+          retention-days: 7
