@@ -6,6 +6,7 @@ using System.Drawing;
 using System.Windows.Forms;
 using System.Linq;
 using TombLib.LevelData;
+using TombEditor.Controls;
 
 namespace Asha.Editor.Caustics
 {
@@ -66,7 +67,20 @@ namespace Asha.Editor.Caustics
                 });
             }
             TombEditor.Editor.Instance.HasUnsavedChanges = true;
+            // Sector paint is not a room-geometry edit, so the 2D grid will
+            // not receive its normal geometry-changed invalidation event.
+            // Refresh the visible floor grid immediately after paint/erase.
+            foreach (Form form in Application.OpenForms)
+                RefreshCausticsGrids(form);
         }
+        private static void RefreshCausticsGrids(Control parent)
+        {
+            if (parent is Panel2DGrid)
+                parent.Invalidate();
+            foreach (Control child in parent.Controls)
+                RefreshCausticsGrids(child);
+        }
+
         public CausticsPanel Panel { get; }
         public SurfaceSelectionStore Selection { get; }
         public bool ShowPurpleSelection => Panel.IsSelecting;
