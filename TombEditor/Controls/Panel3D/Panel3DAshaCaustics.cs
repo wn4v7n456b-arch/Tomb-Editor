@@ -48,9 +48,11 @@ namespace TombEditor.Controls.Panel3D
                 if (!room.RoomGeometry.VertexRangeLookup.TryGetValue(identity, out var range))
                     continue;
 
+                var roomOffset = room.WorldPos;
                 for (int i = range.Start; i < range.Start + range.Count; i++)
                 {
-                    Vector3 position = room.RoomGeometry.VertexPositions[i] + room.WorldPos;
+                    Vector3 position = room.RoomGeometry.VertexPositions[i] +
+                        new Vector3(roomOffset.X, roomOffset.Y, roomOffset.Z);
                     vertices.Add(new SolidVertex(position));
                 }
             }
