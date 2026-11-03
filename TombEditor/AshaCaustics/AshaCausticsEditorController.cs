@@ -20,14 +20,26 @@ namespace Asha.Editor.Caustics
             _loadingLevel = true;
             try
             {
-                Selection.ReplaceAll((level?.CausticsFaces ?? Enumerable.Empty<CausticsFaceRecord>()).Select(face =>
-                    new System.Collections.Generic.KeyValuePair<SurfaceKey, SurfaceSettings>(
-                        new SurfaceKey(face.RoomIndex.ToString(), face.SectorX, face.SectorZ, face.Face),
-                        new SurfaceSettings {
-                            Fade = face.Fade, Brightness = face.Brightness,
-                            Red = face.Red, Green = face.Green, Blue = face.Blue,
-                            Inherit = face.Inherit
-                        }), resetHistory: true);
+                var validFaces = (level?.CausticsFaces ?? Enumerable.Empty<CausticsFaceRecord>())
+                    .Where(face => face != null && face.RoomIndex >= 0 &&
+                        face.RoomIndex < level.Rooms.Length && level.Rooms[face.RoomIndex] != null &&
+                        !string.IsNullOrWhiteSpace(face.Face) &&
+                        face.Fade >= 1 && face.Fade <= 5 &&
+                        face.Brightness >= 1 && face.Brightness <= 5);
+                // Duplicate face records can arise from hand-edited or imported projects.
+                // Keep the last entry instead of failing to open the painting panel.
+                Selection.ReplaceAll(validFaces
+                    .GroupBy(face => new SurfaceKey(face.RoomIndex.ToString(),
+                        face.SectorX, face.SectorZ, face.Face))
+                    .Select(group => {
+                        var face = group.Last();
+                        return new System.Collections.Generic.KeyValuePair<SurfaceKey, SurfaceSettings>(
+                            group.Key, new SurfaceSettings {
+                                Fade = face.Fade, Brightness = face.Brightness,
+                                Red = face.Red, Green = face.Green, Blue = face.Blue,
+                                Inherit = face.Inherit
+                            });
+                    }), resetHistory: true);
             }
             finally { _loadingLevel = false; }
         }
