@@ -566,6 +566,42 @@ namespace TombEditor.Controls
             _insertionContourLineData = null;
         }
 
+        private void DrawAshaCausticsMapMarkers(Graphics graphics)
+        {
+            if (_editor.Level?.CausticsFaces == null) return;
+            using (var pen = new Pen(Color.FromArgb(112, 32, 160), 3.0f))
+            using (var fill = new SolidBrush(Color.FromArgb(112, 32, 160)))
+            {
+                pen.StartCap = LineCap.Round;
+                pen.EndCap = LineCap.Round;
+                foreach (var record in _editor.Level.CausticsFaces)
+                {
+                    if (record.RoomIndex < 0 || record.RoomIndex >= _editor.Level.Rooms.Length)
+                        continue;
+                    Room room = _editor.Level.Rooms[record.RoomIndex];
+                    if (room == null || !_depthBar.CheckRoom(room)) continue;
+                    float x = room.Position.X + record.SectorX;
+                    float z = room.Position.Z + record.SectorZ;
+                    Vector2 a, b;
+                    if (record.Face.StartsWith("Wall_PositiveX", StringComparison.Ordinal))
+                    { a = new Vector2(x + 1, z); b = new Vector2(x + 1, z + 1); }
+                    else if (record.Face.StartsWith("Wall_NegativeX", StringComparison.Ordinal))
+                    { a = new Vector2(x, z); b = new Vector2(x, z + 1); }
+                    else if (record.Face.StartsWith("Wall_PositiveZ", StringComparison.Ordinal))
+                    { a = new Vector2(x, z + 1); b = new Vector2(x + 1, z + 1); }
+                    else if (record.Face.StartsWith("Wall_NegativeZ", StringComparison.Ordinal))
+                    { a = new Vector2(x, z); b = new Vector2(x + 1, z); }
+                    else
+                    {
+                        PointF center = ToVisualCoord(new Vector2(x + 0.5f, z + 0.5f));
+                        graphics.FillEllipse(fill, center.X - 3, center.Y - 3, 6, 6);
+                        continue;
+                    }
+                    graphics.DrawLine(pen, ToVisualCoord(a), ToVisualCoord(b));
+                }
+            }
+        }
+
         protected override void OnPaintBackground(PaintEventArgs e)
         {
             // Don't paint the background
@@ -633,6 +669,8 @@ namespace TombEditor.Controls
                     foreach (Room room in sortedRoomList)
                         if (_depthBar.CheckRoom(room)) // Check if the room fits the depth bar criterion
                             DrawRoom(e, room, currentRangeMin, currentRangeMax, true, true);
+
+                    DrawAshaCausticsMapMarkers(e.Graphics);
 
                     // Draw probe positions with digits
                     e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
