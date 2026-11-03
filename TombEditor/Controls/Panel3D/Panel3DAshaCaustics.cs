@@ -67,11 +67,11 @@ namespace TombEditor.Controls.Panel3D
                 }
                 else
                 {
-                    // Static preview: narrow bright ribbons tessellated on the
-                    // existing surface, never the purple selection material.
-                    // This preview is intentionally static; gameplay animation
-                    // belongs in the game renderer.
-                    const int divisions = 18;
+                    // Static world-space caustic contours: clipped smooth ribbons,
+                    // rather than discrete bright triangles. A shared world-space
+                    // field prevents the pattern restarting at triangle boundaries.
+                    const int divisions = 42;
+                    const float threshold = 0.54f;
                     for (int i = range.Start; i + 2 < range.Start + range.Count; i += 3)
                     {
                         Vector3 a = room.RoomGeometry.VertexPositions[i] + offset;
@@ -86,17 +86,11 @@ namespace TombEditor.Controls.Panel3D
                                             (d - a) * (v / (float)divisions);
                                 Vector3 s = a + (b - a) * (u / (float)divisions) +
                                             (d - a) * ((v + 1) / (float)divisions);
-                                // World-space waves continue across neighbouring
-                                // faces instead of restarting at each triangle.
-                                Vector3 mid = (p + q + s) / 3.0f;
-                                float wave = (float)(Math.Sin(mid.X * 0.018 + mid.Z * 0.012 +
-                                    mid.Y * 0.006) * Math.Sin(mid.X * 0.011 -
-                                    mid.Z * 0.021 + mid.Y * 0.008));
-                                if (wave > 0.34f)
+                                AddAshaCausticContour(highlights, p, q, s, threshold);
+                                if (u + v + 1 < divisions)
                                 {
-                                    highlights.Add(new SolidVertex(p));
-                                    highlights.Add(new SolidVertex(q));
-                                    highlights.Add(new SolidVertex(s));
+                                    Vector3 t = q + s - p;
+                                    AddAshaCausticContour(highlights, q, t, s, threshold);
                                 }
                             }
                     }
@@ -124,6 +118,45 @@ namespace TombEditor.Controls.Panel3D
                 _legacyDevice.SetBlendState(_legacyDevice.BlendStates.Opaque);
                 _legacyDevice.SetDepthStencilState(_legacyDevice.DepthStencilStates.Default);
                 _legacyDevice.SetRasterizerState(_legacyDevice.RasterizerStates.CullBack);
+            }
+        }
+
+        private static float AshaCausticField(Vector3 p)
+        {
+            // Two refracted wave families, sampled at a fixed time.
+            // Shared world coordinates keep adjacent faces continuous.
+            double x = p.X * 0.0095, z = p.Z * 0.0095, y = p.Y * 0.0095;
+            double u = x + 0.28 * Math.Sin(z * 1.7 + y * 0.3);
+            double v = z + 0.26 * Math.Sin(x * 1.5 - y * 0.4);
+            return (float)(0.5 + 0.27 * Math.Cos(3.0 * u + 1.5 * Math.Sin(v * 1.8)) +
+                           0.23 * Math.Cos(3.2 * v + 1.4 * Math.Sin(u * 1.7)));
+        }
+
+        private static void AddAshaCausticContour(List<SolidVertex> output,
+            Vector3 a, Vector3 b, Vector3 c, float threshold)
+        {
+            // Clip a triangle against the bright side of the caustic contour.
+            // Interpolated intersections eliminate the checkerboard triangles.
+            Vector3[] points = { a, b, c };
+            float[] values = { AshaCausticField(a), AshaCausticField(b), AshaCausticField(c) };
+            var clipped = new List<Vector3>(4);
+            for (int i = 0; i < 3; ++i)
+            {
+                int j = (i + 1) % 3;
+                bool inside = values[i] >= threshold;
+                bool nextInside = values[j] >= threshold;
+                if (inside) clipped.Add(points[i]);
+                if (inside != nextInside)
+                {
+                    float t = (threshold - values[i]) / (values[j] - values[i]);
+                    clipped.Add(Vector3.Lerp(points[i], points[j], t));
+                }
+            }
+            for (int i = 1; i + 1 < clipped.Count; i++)
+            {
+                output.Add(new SolidVertex(clipped[0]));
+                output.Add(new SolidVertex(clipped[i]));
+                output.Add(new SolidVertex(clipped[i + 1]));
             }
         }
 
