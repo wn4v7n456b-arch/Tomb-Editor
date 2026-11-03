@@ -11,6 +11,7 @@ namespace TombLib.LevelData.IO
 
         public static readonly byte[] MagicNumber = new byte[] { 0x50, 0x52, 0x4A, 0x32 };
 
+        public static readonly ChunkId AshaCaustics = ChunkId.FromString("AshaCausticsFacesV1");
         public static readonly ChunkId Settings = ChunkId.FromString("TeSettings");
         /**/public static readonly ChunkId LastRoom = ChunkId.FromString("TeLastRoom"); // UTF-8 string
         /**/public static readonly ChunkId DefaultTexture = ChunkId.FromString("TeDefaultTextures");
