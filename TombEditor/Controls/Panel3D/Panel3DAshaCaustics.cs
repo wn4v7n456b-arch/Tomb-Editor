@@ -64,13 +64,13 @@ namespace TombEditor.Controls.Panel3D
             using (var buffer = SharpDX.Toolkit.Graphics.Buffer.Vertex.New(
                 _legacyDevice, vertices.ToArray(), SharpDX.Direct3D11.ResourceUsage.Dynamic))
             {
-                _legacyDevice.SetBlendState(_legacyDevice.BlendStates.AlphaBlend);
+                _legacyDevice.SetBlendState(_legacyDevice.BlendStates.Opaque);
                 _legacyDevice.SetDepthStencilState(_legacyDevice.DepthStencilStates.DepthRead);
                 _legacyDevice.SetRasterizerState(_legacyDevice.RasterizerStates.CullNone);
                 _legacyDevice.SetVertexBuffer(buffer);
                 _legacyDevice.SetVertexInputLayout(VertexInputLayout.FromBuffer(0, buffer));
                 effect.Parameters["ModelViewProjection"].SetValue(_viewProjection.ToSharpDX());
-                effect.Parameters["Color"].SetValue(new Vector4(0.65f, 0.15f, 0.9f, 0.55f));
+                effect.Parameters["Color"].SetValue(new Vector4(0.72f, 0.0f, 1.0f, 1.0f));
                 effect.CurrentTechnique.Passes[0].Apply();
                 _legacyDevice.Draw(PrimitiveType.TriangleList, buffer.ElementCount);
                 _legacyDevice.SetBlendState(_legacyDevice.BlendStates.Opaque);
