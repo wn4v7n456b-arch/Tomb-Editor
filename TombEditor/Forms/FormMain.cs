@@ -221,6 +221,8 @@ namespace TombEditor.Forms
 
         private void EditorEventRaised(IEditorEvent obj)
         {
+            if (obj is Editor.LevelChangedEvent && _ashaCausticsController != null)
+                _ashaCausticsController.BindLevel(_editor.Level);
             // Gray out menu options that do not apply
             if (obj is Editor.SelectedObjectChangedEvent ||
                 obj is Editor.ModeChangedEvent ||
