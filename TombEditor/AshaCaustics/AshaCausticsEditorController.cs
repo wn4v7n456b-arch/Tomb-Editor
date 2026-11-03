@@ -28,7 +28,7 @@ namespace Asha.Editor.Caustics
                             Fade = face.Fade, Brightness = face.Brightness,
                             Red = face.Red, Green = face.Green, Blue = face.Blue,
                             Inherit = face.Inherit
-                        })));
+                        }), resetHistory: true);
             }
             finally { _loadingLevel = false; }
         }
