@@ -2095,6 +2095,7 @@ namespace TombEditor.Controls.Panel3D
                     DrawFlybyPath(effect);
                 // Draw sector split highlights
                 DrawSectorSplitHighlights(effect);
+                DrawAshaCausticsOverlay(effect);
             }
 
             // Draw ghost block cubes
