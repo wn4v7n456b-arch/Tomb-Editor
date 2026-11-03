@@ -66,7 +66,10 @@ namespace TombEditor.Controls.Panel3D
             {
                 _legacyDevice.SetBlendState(_legacyDevice.BlendStates.Opaque);
                 _legacyDevice.SetDepthStencilState(_legacyDevice.DepthStencilStates.DepthRead);
-                _legacyDevice.SetRasterizerState(_legacyDevice.RasterizerStates.CullNone);
+                // Match the editor's existing depth-biased surface highlight state.
+                // Coplanar triangles otherwise fight the textured wall depth buffer,
+                // producing the reported purple speckle/fuzz.
+                _legacyDevice.SetRasterizerState(_rasterizerStateDepthBias);
                 _legacyDevice.SetVertexBuffer(buffer);
                 _legacyDevice.SetVertexInputLayout(VertexInputLayout.FromBuffer(0, buffer));
                 effect.Parameters["ModelViewProjection"].SetValue(_viewProjection.ToSharpDX());
@@ -75,6 +78,7 @@ namespace TombEditor.Controls.Panel3D
                 _legacyDevice.Draw(PrimitiveType.TriangleList, buffer.ElementCount);
                 _legacyDevice.SetBlendState(_legacyDevice.BlendStates.Opaque);
                 _legacyDevice.SetDepthStencilState(_legacyDevice.DepthStencilStates.Default);
+                _legacyDevice.SetRasterizerState(_legacyDevice.RasterizerStates.CullBack);
             }
         }
 
