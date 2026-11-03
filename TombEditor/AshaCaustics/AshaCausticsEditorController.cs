@@ -24,8 +24,6 @@ namespace Asha.Editor.Caustics
             Panel.SelectionModeChanged += OnPanelChanged;
             Panel.PreviewChanged += OnPanelChanged;
             Panel.ClearSelectionRequested += OnClear;
-            Panel.SaveRequested += OnSave;
-            Panel.LoadRequested += OnLoad;
             Selection.Changed += OnPanelChanged;
             Selection.Changed += UpdatePaintedCount;
             Panel.SetPaintedFaceCount(Selection.Selected.Count);
@@ -71,8 +69,6 @@ namespace Asha.Editor.Caustics
             Panel.SelectionModeChanged -= OnPanelChanged;
             Panel.PreviewChanged -= OnPanelChanged;
             Panel.ClearSelectionRequested -= OnClear;
-            Panel.SaveRequested -= OnSave;
-            Panel.LoadRequested -= OnLoad;
             Selection.Changed -= OnPanelChanged;
             Selection.Changed -= UpdatePaintedCount;
         }
