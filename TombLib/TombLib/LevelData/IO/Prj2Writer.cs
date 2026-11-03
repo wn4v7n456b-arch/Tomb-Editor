@@ -75,26 +75,29 @@ namespace TombLib.LevelData.IO
 
                 // Write rooms
                 WriteRooms(chunkIO, rooms, levelSettingIds);
-                using (var causticsChunk = chunkIO.WriteChunk(Prj2Chunks.AshaCaustics, long.MaxValue))
-                {
                     var savedFaces = level.CausticsFaces.Where(face =>
                         face.RoomIndex >= 0 && face.RoomIndex < level.Rooms.Length &&
                         level.Rooms[face.RoomIndex] != null && rooms.ContainsKey(level.Rooms[face.RoomIndex])).ToList();
-                    chunkIO.Raw.Write(savedFaces.Count);
-                    foreach (var face in savedFaces)
+                    if (savedFaces.Count != 0)
                     {
-                        chunkIO.Raw.Write(face.RoomIndex);
-                        chunkIO.Raw.Write(face.SectorX);
-                        chunkIO.Raw.Write(face.SectorZ);
-                        chunkIO.Raw.WriteStringUTF8(face.Face);
-                        chunkIO.Raw.Write(face.Fade);
-                        chunkIO.Raw.Write(face.Brightness);
-                        chunkIO.Raw.Write(face.Red);
-                        chunkIO.Raw.Write(face.Green);
-                        chunkIO.Raw.Write(face.Blue);
-                        chunkIO.Raw.Write(face.Inherit);
+                        using (var causticsChunk = chunkIO.WriteChunk(Prj2Chunks.AshaCaustics, long.MaxValue))
+                        {
+                        chunkIO.Raw.Write(savedFaces.Count);
+                        foreach (var face in savedFaces)
+                        {
+                            chunkIO.Raw.Write(face.RoomIndex);
+                            chunkIO.Raw.Write(face.SectorX);
+                            chunkIO.Raw.Write(face.SectorZ);
+                            chunkIO.Raw.WriteStringUTF8(face.Face);
+                            chunkIO.Raw.Write(face.Fade);
+                            chunkIO.Raw.Write(face.Brightness);
+                            chunkIO.Raw.Write(face.Red);
+                            chunkIO.Raw.Write(face.Green);
+                            chunkIO.Raw.Write(face.Blue);
+                            chunkIO.Raw.Write(face.Inherit);
+                        }
+                        }
                     }
-                }
                 chunkIO.WriteChunkEnd();
             }
         }
