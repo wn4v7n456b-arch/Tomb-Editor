@@ -662,6 +662,14 @@ namespace TombEditor.Forms
 
         protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
         {
+            if (_ashaCausticsController != null && _ashaCausticsController.Panel.IsSelecting &&
+                !WinFormsUtils.CurrentControlSupportsInput(this, keyData))
+            {
+                if (keyData == (Keys.Control | Keys.Z))
+                    return _ashaCausticsController.Selection.Undo() || true;
+                if (keyData == (Keys.Control | Keys.Y))
+                    return _ashaCausticsController.Selection.Redo() || true;
+            }
             if (keyData == Keys.F12)
             {
                 ToggleAshaFocusMode();
