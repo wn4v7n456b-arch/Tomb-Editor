@@ -23,6 +23,8 @@ namespace Asha.Editor.Caustics
                 var validFaces = (level?.CausticsFaces ?? Enumerable.Empty<CausticsFaceRecord>())
                     .Where(face => face != null && face.RoomIndex >= 0 &&
                         face.RoomIndex < level.Rooms.Length && level.Rooms[face.RoomIndex] != null &&
+                        face.SectorX >= 0 && face.SectorX < level.Rooms[face.RoomIndex].NumXSectors &&
+                        face.SectorZ >= 0 && face.SectorZ < level.Rooms[face.RoomIndex].NumZSectors &&
                         !string.IsNullOrWhiteSpace(face.Face) &&
                         face.Fade >= 1 && face.Fade <= 5 &&
                         face.Brightness >= 1 && face.Brightness <= 5);
@@ -51,7 +53,9 @@ namespace Asha.Editor.Caustics
             {
                 if (!int.TryParse(entry.Key.RoomId, out int roomIndex) ||
                     roomIndex < 0 || roomIndex >= _boundLevel.Rooms.Length ||
-                    _boundLevel.Rooms[roomIndex] == null) continue;
+                    _boundLevel.Rooms[roomIndex] == null ||
+                    entry.Key.SectorX < 0 || entry.Key.SectorX >= _boundLevel.Rooms[roomIndex].NumXSectors ||
+                    entry.Key.SectorZ < 0 || entry.Key.SectorZ >= _boundLevel.Rooms[roomIndex].NumZSectors) continue;
                 var settings = entry.Value;
                 _boundLevel.CausticsFaces.Add(new CausticsFaceRecord {
                     RoomIndex = roomIndex, SectorX = entry.Key.SectorX,
