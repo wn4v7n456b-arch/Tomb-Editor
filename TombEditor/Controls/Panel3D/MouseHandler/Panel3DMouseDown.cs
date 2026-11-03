@@ -16,6 +16,9 @@ namespace TombEditor.Controls.Panel3D
     {
         private void OnMouseButtonDownLeft(Point location)
         {
+            if (HandleAshaCausticsClick(location.X, location.Y, ModifierKeys.HasFlag(Keys.Shift)))
+                return;
+
             // Do picking on the scene
             bool skipObjectPicking = _editor.Mode == EditorMode.ObjectPlacement && _editor.Tool.Tool != EditorToolType.Selection && !ModifierKeys.HasFlag(Keys.Alt);
             var newPicking = DoPicking(GetRay(location.X, location.Y), _editor.Configuration.Rendering3D_SelectObjectsInAnyRoom, skipObjectPicking);
