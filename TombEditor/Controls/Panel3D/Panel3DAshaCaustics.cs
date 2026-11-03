@@ -1,5 +1,11 @@
 using System;
 using TombLib.Rendering;
+using TombLib.LevelData;
+using TombLib.LevelData.SectorEnums;
+using TombLib.Graphics.Primitives;
+using SharpDX.Toolkit.Graphics;
+using System.Collections.Generic;
+using System.Numerics;
 
 namespace TombEditor.Controls.Panel3D
 {
@@ -18,6 +24,54 @@ namespace TombEditor.Controls.Panel3D
         }
 
         private void RefreshAshaCaustics(object sender, EventArgs e) => Invalidate();
+
+
+        private void DrawAshaCausticsOverlay(Effect effect)
+        {
+            if (_ashaCausticsController == null || !_ashaCausticsController.ShowPurpleSelection ||
+                _editor.Level == null || _ashaCausticsController.Selection.Selected.Count == 0)
+                return;
+
+            var vertices = new List<SolidVertex>();
+            foreach (var entry in _ashaCausticsController.Selection.Selected)
+            {
+                if (!int.TryParse(entry.Key.RoomId, out int roomIndex) ||
+                    roomIndex < 0 || roomIndex >= _editor.Level.Rooms.Length)
+                    continue;
+                Room room = _editor.Level.Rooms[roomIndex];
+                if (room?.RoomGeometry == null ||
+                    !Enum.TryParse(entry.Key.Face, out SectorFace face))
+                    continue;
+
+                var identity = new SectorFaceIdentity(entry.Key.SectorX, entry.Key.SectorZ, face);
+                if (!room.RoomGeometry.VertexRangeLookup.TryGetValue(identity, out var range))
+                    continue;
+
+                for (int i = range.Start; i < range.Start + range.Count; i++)
+                {
+                    Vector3 position = room.RoomGeometry.VertexPositions[i] + room.WorldPos;
+                    vertices.Add(new SolidVertex(position));
+                }
+            }
+            if (vertices.Count == 0)
+                return;
+
+            using (var buffer = SharpDX.Toolkit.Graphics.Buffer.Vertex.New(
+                _legacyDevice, vertices.ToArray(), SharpDX.Direct3D11.ResourceUsage.Dynamic))
+            {
+                _legacyDevice.SetBlendState(_legacyDevice.BlendStates.AlphaBlend);
+                _legacyDevice.SetDepthStencilState(_legacyDevice.DepthStencilStates.DepthRead);
+                _legacyDevice.SetRasterizerState(_legacyDevice.RasterizerStates.CullNone);
+                _legacyDevice.SetVertexBuffer(buffer);
+                _legacyDevice.SetVertexInputLayout(VertexInputLayout.FromBuffer(0, buffer));
+                effect.Parameters["ModelViewProjection"].SetValue(_viewProjection.ToSharpDX());
+                effect.Parameters["Color"].SetValue(new Vector4(0.65f, 0.15f, 0.9f, 0.55f));
+                effect.CurrentTechnique.Passes[0].Apply();
+                _legacyDevice.Draw(PrimitiveType.TriangleList, buffer.ElementCount);
+                _legacyDevice.SetBlendState(_legacyDevice.BlendStates.Opaque);
+                _legacyDevice.SetDepthStencilState(_legacyDevice.DepthStencilStates.Default);
+            }
+        }
 
         private bool HandleAshaCausticsClick(int x, int y, bool erase)
         {
