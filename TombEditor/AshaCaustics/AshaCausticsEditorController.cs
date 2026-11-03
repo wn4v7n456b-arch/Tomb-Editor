@@ -3,6 +3,7 @@
 // This file deliberately does not claim that viewport hooking is complete.
 using System;
 using System.Drawing;
+using System.Windows.Forms;
 using System.Linq;
 using TombLib.LevelData;
 
@@ -72,7 +73,15 @@ namespace Asha.Editor.Caustics
         private void UpdatePaintedCount(object sender, EventArgs e) => Panel.SetPaintedFaceCount(Selection.Selected.Count);
         private void OnPanelChanged(object sender, EventArgs e) =>
             ViewportRefreshRequested?.Invoke(this, EventArgs.Empty);
-        private void OnClear(object sender, EventArgs e) => Selection.Clear();
+        private void OnClear(object sender, EventArgs e)
+        {
+            if (Selection.Selected.Count == 0) return;
+            if (MessageBox.Show(Panel,
+                    "Remove all painted Caustics faces from this level? You can undo this action.",
+                    "Clear Caustics painting", MessageBoxButtons.YesNo,
+                    MessageBoxIcon.Warning) == DialogResult.Yes)
+                Selection.Clear();
+        }
         public void PaintPickedFace(string stableRoomId, int sectorX, int sectorZ, string face)
         {
             if (!Panel.IsSelecting) return;
