@@ -27,7 +27,10 @@ namespace Asha.Editor.Caustics
             Panel.SaveRequested += OnSave;
             Panel.LoadRequested += OnLoad;
             Selection.Changed += OnPanelChanged;
+            Selection.Changed += UpdatePaintedCount;
+            Panel.SetPaintedFaceCount(Selection.Selected.Count);
         }
+        private void UpdatePaintedCount(object sender, EventArgs e) => Panel.SetPaintedFaceCount(Selection.Selected.Count);
         private void OnPanelChanged(object sender, EventArgs e) =>
             ViewportRefreshRequested?.Invoke(this, EventArgs.Empty);
         private void OnClear(object sender, EventArgs e) => Selection.Clear();
@@ -71,6 +74,7 @@ namespace Asha.Editor.Caustics
             Panel.SaveRequested -= OnSave;
             Panel.LoadRequested -= OnLoad;
             Selection.Changed -= OnPanelChanged;
+            Selection.Changed -= UpdatePaintedCount;
         }
     }
 }
