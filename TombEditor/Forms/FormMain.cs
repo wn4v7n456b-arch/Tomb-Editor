@@ -666,9 +666,9 @@ namespace TombEditor.Forms
                 !WinFormsUtils.CurrentControlSupportsInput(this, keyData))
             {
                 if (keyData == (Keys.Control | Keys.Z))
-                    return _ashaCausticsController.Selection.Undo() || true;
+                    return _ashaCausticsController.Selection.Undo();
                 if (keyData == (Keys.Control | Keys.Y))
-                    return _ashaCausticsController.Selection.Redo() || true;
+                    return _ashaCausticsController.Selection.Redo();
             }
             if (keyData == Keys.F12)
             {
