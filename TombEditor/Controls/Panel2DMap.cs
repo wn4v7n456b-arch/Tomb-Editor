@@ -568,36 +568,32 @@ namespace TombEditor.Controls
 
         private void DrawAshaCausticsMapMarkers(Graphics graphics)
         {
+            // Paint whole marked sector squares as a background layer, not
+            // individual wall edges. Drawn before probes, selection and other
+            // foreground map markers so they remain legible.
             if (_editor.Level?.CausticsFaces == null) return;
-            using (var pen = new Pen(Color.FromArgb(112, 32, 160), 3.0f))
-            using (var fill = new SolidBrush(Color.FromArgb(112, 32, 160)))
+            using (var fill = new SolidBrush(Color.FromArgb(170, 112, 32, 160)))
             {
-                pen.StartCap = LineCap.Round;
-                pen.EndCap = LineCap.Round;
+                var seen = new HashSet<string>();
                 foreach (var record in _editor.Level.CausticsFaces)
                 {
                     if (record.RoomIndex < 0 || record.RoomIndex >= _editor.Level.Rooms.Length)
                         continue;
                     Room room = _editor.Level.Rooms[record.RoomIndex];
-                    if (room == null || !_depthBar.CheckRoom(room)) continue;
+                    if (room == null || !_depthBar.CheckRoom(room) ||
+                        record.SectorX < 0 || record.SectorZ < 0 ||
+                        record.SectorX >= room.NumXSectors ||
+                        record.SectorZ >= room.NumZSectors)
+                        continue;
+                    string key = record.RoomIndex + ":" + record.SectorX + ":" + record.SectorZ;
+                    if (!seen.Add(key)) continue;
                     float x = room.Position.X + record.SectorX;
                     float z = room.Position.Z + record.SectorZ;
-                    Vector2 a, b;
-                    if (record.Face.StartsWith("Wall_PositiveX", StringComparison.Ordinal))
-                    { a = new Vector2(x + 1, z); b = new Vector2(x + 1, z + 1); }
-                    else if (record.Face.StartsWith("Wall_NegativeX", StringComparison.Ordinal))
-                    { a = new Vector2(x, z); b = new Vector2(x, z + 1); }
-                    else if (record.Face.StartsWith("Wall_PositiveZ", StringComparison.Ordinal))
-                    { a = new Vector2(x, z + 1); b = new Vector2(x + 1, z + 1); }
-                    else if (record.Face.StartsWith("Wall_NegativeZ", StringComparison.Ordinal))
-                    { a = new Vector2(x, z); b = new Vector2(x + 1, z); }
-                    else
-                    {
-                        PointF center = ToVisualCoord(new Vector2(x + 0.5f, z + 0.5f));
-                        graphics.FillEllipse(fill, center.X - 3, center.Y - 3, 6, 6);
-                        continue;
-                    }
-                    graphics.DrawLine(pen, ToVisualCoord(a), ToVisualCoord(b));
+                    PointF p0 = ToVisualCoord(new Vector2(x, z));
+                    PointF p1 = ToVisualCoord(new Vector2(x + 1, z + 1));
+                    graphics.FillRectangle(fill, Math.Min(p0.X, p1.X),
+                        Math.Min(p0.Y, p1.Y), Math.Abs(p1.X - p0.X),
+                        Math.Abs(p1.Y - p0.Y));
                 }
             }
         }
