@@ -163,7 +163,10 @@ namespace TombLib.LevelData.Compilers
             // Source room indices are preserved here; the runtime must NOT treat
             // them as compiled room indices until an explicit mapping is installed.
             if (!cancelToken.IsCancellationRequested && _level.Settings.GameVersion == TRVersion.Game.TR4)
+            {
                 WriteAshaCausticsSidecar();
+                WriteAshaCausticsPolygonMap();
+            }
 
             // Needed to make decision about backup (delete or restore)
             _compiledSuccessfully = !cancelToken.IsCancellationRequested;
@@ -177,6 +180,48 @@ namespace TombLib.LevelData.Compilers
                 OverlapCount = _overlaps.Length,
                 ObjectTextureCount = _textureInfoManager.TexInfoCount,
             };
+        }
+
+        private void WriteAshaCausticsPolygonMap()
+        {
+            string output = _finalDest + ".acpm";
+            var painted = new HashSet<string>(_level.CausticsFaces.Select(f =>
+                f.RoomIndex + ":" + f.SectorX + ":" + f.SectorZ + ":" + f.Face));
+            var entries = new List<(uint room, uint ordinal, uint x, uint z, uint face)>();
+            for (int compiledRoom = 0; compiledRoom < _sortedRooms.Length; ++compiledRoom)
+            {
+                var room = _sortedRooms[compiledRoom];
+                if (room == null || !_ashaCausticsPolygonOrigins.TryGetValue(room, out var origins))
+                    continue;
+                int originalRoom = Array.IndexOf(_level.Rooms, room);
+                int finalQuadCount = _tempRooms[room].Quads.Count;
+                foreach (var origin in origins)
+                {
+                    string key = originalRoom + ":" + origin.x + ":" + origin.z + ":" + origin.face;
+                    if (!painted.Contains(key)) continue;
+                    entries.Add(((uint)compiledRoom,
+                        (uint)(origin.quad ? origin.index : finalQuadCount + origin.index),
+                        (uint)origin.x, (uint)origin.z, Convert.ToUInt32(origin.face)));
+                }
+            }
+            if (entries.Count == 0)
+            {
+                if (File.Exists(output)) File.Delete(output);
+                return;
+            }
+            using (var stream = File.Create(output))
+            using (var writer = new BinaryWriter(stream))
+            {
+                writer.Write(new byte[] { (byte)'A', (byte)'C', (byte)'P', (byte)'M' });
+                writer.Write((uint)1);
+                writer.Write((uint)entries.Count);
+                foreach (var entry in entries)
+                {
+                    writer.Write(entry.room); writer.Write(entry.ordinal);
+                    writer.Write(entry.x); writer.Write(entry.z); writer.Write(entry.face);
+                }
+            }
+            _progressReporter.ReportInfo("Caustics polygon mapping: " + entries.Count + " polygons");
         }
 
         private void WriteAshaCausticsSidecar()
