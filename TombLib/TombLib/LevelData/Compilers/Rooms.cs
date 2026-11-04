@@ -159,6 +159,11 @@ namespace TombLib.LevelData.Compilers
             return Vector3.Max(output, new Vector3()) * (1.0f / 128.0f);
         }
 
+        // Source sector-face identity for every compiled room polygon.
+        // Indices are recorded before merged static geometry is appended.
+        private readonly Dictionary<Room, List<(bool quad, int index, int x, int z, SectorFace face)>>
+            _ashaCausticsPolygonOrigins = new Dictionary<Room, List<(bool, int, int, int, SectorFace)>>();
+
         private tr_room BuildRoom(Room room)
         {
             tr_color roomAmbientColor = PackColorTo24Bit(room.Properties.AmbientLight);
@@ -342,6 +347,7 @@ namespace TombLib.LevelData.Compilers
 
                 var roomTriangles = new List<tr_face3>();
                 var roomQuads = new List<tr_face4>();
+                var ashaOrigins = new List<(bool quad, int index, int x, int z, SectorFace face)>();
 
                 // Add room's own geometry
 
@@ -375,6 +381,8 @@ namespace TombLib.LevelData.Compilers
                                 var doubleSided = _level.Settings.GameVersion.Native() > TRVersion.Game.TR2 && texture.DoubleSided;
                                 var copyFace    = _level.Settings.GameVersion.Native() <= TRVersion.Game.TR2 && texture.DoubleSided;
 
+                                int ashaQuadStart = roomQuads.Count;
+                                int ashaTriStart = roomTriangles.Count;
                                 int rangeEnd = range.Start + range.Count;
                                 for (int i = range.Start; i < rangeEnd; i += 3)
                                 {
@@ -477,7 +485,13 @@ namespace TombLib.LevelData.Compilers
                                         }
                                     }
                                 }
+                                for (int q = ashaQuadStart; q < roomQuads.Count; ++q)
+                                    ashaOrigins.Add((true, q, x, z, face));
+                                for (int t = ashaTriStart; t < roomTriangles.Count; ++t)
+                                    ashaOrigins.Add((false, t, x, z, face));
                             }
+
+                _ashaCausticsPolygonOrigins[room] = ashaOrigins;
 
                 // Merge static meshes
 
