@@ -209,6 +209,7 @@ namespace TombLib.LevelData.Compilers
                 _progressReporter.ReportWarn("CAUSTICS EXPORT: " + _level.CausticsFaces.Count +
                     " painted faces, 0 mapped polygons; ACPM not exported.");
                 if (File.Exists(output)) File.Delete(output);
+                WriteAshaCausticsExportReport(_level.CausticsFaces.Count, 0);
                 if (_level.CausticsFaces.Count > 0)
                     throw new InvalidDataException(
                         "Caustics export failed: painted faces exist but no compiled polygons matched. " +
