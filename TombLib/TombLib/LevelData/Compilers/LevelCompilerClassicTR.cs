@@ -207,6 +207,10 @@ namespace TombLib.LevelData.Compilers
             if (entries.Count == 0)
             {
                 if (File.Exists(output)) File.Delete(output);
+                if (_level.CausticsFaces.Count > 0)
+                    throw new InvalidDataException(
+                        "Caustics export failed: painted faces exist but no compiled polygons matched. " +
+                        "Check polygon-origin capture and painted face identities.");
                 return;
             }
             using (var stream = File.Create(output))
