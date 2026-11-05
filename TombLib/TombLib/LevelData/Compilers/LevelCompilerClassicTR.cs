@@ -185,8 +185,15 @@ namespace TombLib.LevelData.Compilers
         private void WriteAshaCausticsPolygonMap()
         {
             string output = _finalDest + ".acpm";
-            var painted = new HashSet<string>(_level.CausticsFaces.Select(f =>
-                f.RoomIndex + ":" + f.SectorX + ":" + f.SectorZ + ":" + f.Face));
+            // Match typed sector identities rather than string-formatted enum names.
+            // The editor stores face names, while geometry capture stores SectorFace values.
+            var painted = new HashSet<(int room, int x, int z, SectorFace face)>();
+            foreach (var record in _level.CausticsFaces)
+            {
+                if (!Enum.TryParse(record.Face, out SectorFace face))
+                    throw new InvalidDataException("Invalid Caustics sector face: " + record.Face);
+                painted.Add((record.RoomIndex, record.SectorX, record.SectorZ, face));
+            }
             var entries = new List<(uint room, uint ordinal, uint x, uint z, uint face)>();
             for (int compiledRoom = 0; compiledRoom < _sortedRooms.Length; ++compiledRoom)
             {
@@ -197,8 +204,7 @@ namespace TombLib.LevelData.Compilers
                 int finalQuadCount = _tempRooms[room].Quads.Count;
                 foreach (var origin in origins)
                 {
-                    string key = originalRoom + ":" + origin.x + ":" + origin.z + ":" + origin.face;
-                    if (!painted.Contains(key)) continue;
+                    if (!painted.Contains((originalRoom, origin.x, origin.z, origin.face))) continue;
                     entries.Add(((uint)compiledRoom,
                         (uint)(origin.quad ? origin.index : finalQuadCount + origin.index),
                         (uint)origin.x, (uint)origin.z, Convert.ToUInt32(origin.face)));
