@@ -142,6 +142,9 @@ namespace TombEditor.ToolWindows
                         case LightType.CausticsEffect:
                             HasInRange = true;
                             HasOutRange = true;
+                            // Caustics bulbs are directional: expose their existing
+                            // yaw and pitch controls, just like spotlights.
+                            HasDirection = true;
                             break;
 
                         case LightType.FogBulb:
