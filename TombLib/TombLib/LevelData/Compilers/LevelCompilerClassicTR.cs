@@ -206,6 +206,8 @@ namespace TombLib.LevelData.Compilers
             }
             if (entries.Count == 0)
             {
+                _progressReporter.ReportWarn("CAUSTICS EXPORT: " + _level.CausticsFaces.Count +
+                    " painted faces, 0 mapped polygons; ACPM not exported.");
                 if (File.Exists(output)) File.Delete(output);
                 if (_level.CausticsFaces.Count > 0)
                     throw new InvalidDataException(
@@ -225,7 +227,22 @@ namespace TombLib.LevelData.Compilers
                     writer.Write(entry.x); writer.Write(entry.z); writer.Write(entry.face);
                 }
             }
-            _progressReporter.ReportInfo("Caustics polygon mapping: " + entries.Count + " polygons");
+            _progressReporter.ReportInfo("CAUSTICS EXPORT: " + _level.CausticsFaces.Count +
+                " painted faces, " + entries.Count + " mapped polygons; ACPF and ACPM exported.");
+            WriteAshaCausticsExportReport(_level.CausticsFaces.Count, entries.Count);
+        }
+
+        private void WriteAshaCausticsExportReport(int faces, int polygons)
+        {
+            string report = _finalDest + ".caustics-report.txt";
+            File.WriteAllText(report,
+                "ASHA CAUSTICS COMPILE REPORT" + Environment.NewLine +
+                "Level: " + _finalDest + Environment.NewLine +
+                "Painted faces: " + faces + Environment.NewLine +
+                "Mapped polygons: " + polygons + Environment.NewLine +
+                "ACPF: " + (File.Exists(_finalDest + ".acpf") ? "EXPORTED" : "MISSING") + Environment.NewLine +
+                "ACPM: " + (File.Exists(_finalDest + ".acpm") ? "EXPORTED" : "MISSING") + Environment.NewLine);
+            _progressReporter.ReportInfo("Caustics report saved: " + report);
         }
 
         private void WriteAshaCausticsSidecar()
