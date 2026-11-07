@@ -185,6 +185,7 @@ namespace TombLib.LevelData.Compilers
         private void WriteAshaCausticsPolygonMap()
         {
             string output = _finalDest + ".acpm";
+            string roomReport = _finalDest + ".caustics-rooms.txt";
             // Match typed sector identities rather than string-formatted enum names.
             // The editor stores face names, while geometry capture stores SectorFace values.
             var painted = new Dictionary<(int room, int x, int z, SectorFace face), CausticsFaceRecord>();
@@ -232,6 +233,7 @@ namespace TombLib.LevelData.Compilers
             if (missingFaces.Count != 0)
             {
                 if (File.Exists(output)) File.Delete(output);
+                if (File.Exists(roomReport)) File.Delete(roomReport);
                 WriteAshaCausticsExportReport(_level.CausticsFaces.Count, entries.Count);
                 var details = string.Join("; ", missingFaces.Take(12).Select(key =>
                     "room " + key.room + ", sector (" + key.x + "," + key.z +
@@ -264,6 +266,7 @@ namespace TombLib.LevelData.Compilers
                 _progressReporter.ReportWarn("CAUSTICS EXPORT: " + _level.CausticsFaces.Count +
                     " painted faces, 0 mapped polygons; ACPM not exported.");
                 if (File.Exists(output)) File.Delete(output);
+                if (File.Exists(roomReport)) File.Delete(roomReport);
                 WriteAshaCausticsExportReport(_level.CausticsFaces.Count, 0);
                 if (_level.CausticsFaces.Count > 0)
                     throw new InvalidDataException(
@@ -291,7 +294,7 @@ namespace TombLib.LevelData.Compilers
             WriteAshaCausticsExportReport(_level.CausticsFaces.Count, entries.Count);
             // Persist room coverage beside the level, not only in compiler logs.
             // Room identifiers are the actual compiled indices used by InsertRoom.
-            File.WriteAllLines(_finalDest + ".caustics-rooms.txt",
+            File.WriteAllLines(roomReport,
                 new[] { "ASHA CAUSTICS COMPILED ROOM COVERAGE",
                     "Level: " + _finalDest,
                     "Painted compiled rooms: " + compiledRoomCoverage.Length,
