@@ -219,6 +219,15 @@ namespace TombLib.LevelData.Compilers
                 mappedFaces.Add((Array.IndexOf(_level.Rooms, _sortedRooms[(int)entry.room]),
                     (int)entry.x, (int)entry.z, (SectorFace)entry.face));
             }
+            // Summarize coverage by compiled room so a level author can identify
+            // which rooms contain painted output without inspecting binary ACPM.
+            var compiledRoomCoverage = entries.GroupBy(entry => entry.room)
+                .OrderBy(group => group.Key)
+                .Select(group => "compiled room " + group.Key + ": " + group.Count() +
+                    " painted polygons").ToArray();
+            _progressReporter.ReportInfo("CAUSTICS ROOM COVERAGE: " +
+                (compiledRoomCoverage.Length == 0 ? "none" :
+                    string.Join("; ", compiledRoomCoverage)));
             var missingFaces = painted.Keys.Where(key => !mappedFaces.Contains(key)).ToList();
             if (missingFaces.Count != 0)
             {
