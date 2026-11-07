@@ -185,9 +185,13 @@ namespace TombLib.LevelData.Compilers
         private void WriteAshaCausticsPolygonMap()
         {
             string output = _finalDest + ".acpm";
-            string roomReport = _finalDest + ".caustics-rooms.txt";
             // Match typed sector identities rather than string-formatted enum names.
             // The editor stores face names, while geometry capture stores SectorFace values.
+            // Never let diagnostics from a previous compilation masquerade as
+            // evidence for this one, even if validation fails before export.
+            string roomReport = _finalDest + ".caustics-rooms.txt";
+            if (File.Exists(roomReport)) File.Delete(roomReport);
+            if (File.Exists(output)) File.Delete(output);
             var painted = new Dictionary<(int room, int x, int z, SectorFace face), CausticsFaceRecord>();
             foreach (var record in _level.CausticsFaces)
             {
