@@ -289,6 +289,14 @@ namespace TombLib.LevelData.Compilers
             _progressReporter.ReportInfo("CAUSTICS EXPORT: " + _level.CausticsFaces.Count +
                 " painted faces, " + entries.Count + " mapped polygons; ACPF and ACPM exported.");
             WriteAshaCausticsExportReport(_level.CausticsFaces.Count, entries.Count);
+            // Persist room coverage beside the level, not only in compiler logs.
+            // Room identifiers are the actual compiled indices used by InsertRoom.
+            File.WriteAllLines(_finalDest + ".caustics-rooms.txt",
+                new[] { "ASHA CAUSTICS COMPILED ROOM COVERAGE",
+                    "Level: " + _finalDest,
+                    "Painted compiled rooms: " + compiledRoomCoverage.Length,
+                    "Painted compiled polygons: " + entries.Count }
+                .Concat(compiledRoomCoverage));
         }
 
         private void WriteAshaCausticsExportReport(int faces, int polygons)
