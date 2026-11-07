@@ -187,14 +187,14 @@ namespace TombLib.LevelData.Compilers
             string output = _finalDest + ".acpm";
             // Match typed sector identities rather than string-formatted enum names.
             // The editor stores face names, while geometry capture stores SectorFace values.
-            var painted = new HashSet<(int room, int x, int z, SectorFace face)>();
+            var painted = new Dictionary<(int room, int x, int z, SectorFace face), CausticsFaceRecord>();
             foreach (var record in _level.CausticsFaces)
             {
                 if (!Enum.TryParse(record.Face, out SectorFace face))
                     throw new InvalidDataException("Invalid Caustics sector face: " + record.Face);
-                painted.Add((record.RoomIndex, record.SectorX, record.SectorZ, face));
+                painted.Add((record.RoomIndex, record.SectorX, record.SectorZ, face), record);
             }
-            var entries = new List<(uint room, uint ordinal, uint x, uint z, uint face)>();
+            var entries = new List<(uint room, uint ordinal, uint x, uint z, uint face, CausticsFaceRecord settings)>();
             for (int compiledRoom = 0; compiledRoom < _sortedRooms.Length; ++compiledRoom)
             {
                 var room = _sortedRooms[compiledRoom];
@@ -204,10 +204,10 @@ namespace TombLib.LevelData.Compilers
                 int finalQuadCount = _tempRooms[room].Quads.Count;
                 foreach (var origin in origins)
                 {
-                    if (!painted.Contains((originalRoom, origin.x, origin.z, origin.face))) continue;
+                    if (!painted.TryGetValue((originalRoom, origin.x, origin.z, origin.face), out var settings)) continue;
                     entries.Add(((uint)compiledRoom,
                         (uint)(origin.quad ? origin.index : finalQuadCount + origin.index),
-                        (uint)origin.x, (uint)origin.z, Convert.ToUInt32(origin.face)));
+                        (uint)origin.x, (uint)origin.z, Convert.ToUInt32(origin.face), settings));
                 }
             }
             if (entries.Count == 0)
@@ -226,12 +226,15 @@ namespace TombLib.LevelData.Compilers
             using (var writer = new BinaryWriter(stream))
             {
                 writer.Write(new byte[] { (byte)'A', (byte)'C', (byte)'P', (byte)'M' });
-                writer.Write((uint)1);
+                writer.Write((uint)2);
                 writer.Write((uint)entries.Count);
                 foreach (var entry in entries)
                 {
                     writer.Write(entry.room); writer.Write(entry.ordinal);
                     writer.Write(entry.x); writer.Write(entry.z); writer.Write(entry.face);
+                    writer.Write(entry.settings.Fade); writer.Write(entry.settings.Brightness);
+                    writer.Write(entry.settings.Red); writer.Write(entry.settings.Green);
+                    writer.Write(entry.settings.Blue); writer.Write((byte)(entry.settings.Inherit ? 1 : 0));
                 }
             }
             _progressReporter.ReportInfo("CAUSTICS EXPORT: " + _level.CausticsFaces.Count +
