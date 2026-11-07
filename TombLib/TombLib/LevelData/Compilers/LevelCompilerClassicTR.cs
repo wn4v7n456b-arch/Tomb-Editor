@@ -210,6 +210,29 @@ namespace TombLib.LevelData.Compilers
                         (uint)origin.x, (uint)origin.z, Convert.ToUInt32(origin.face), settings));
                 }
             }
+            // A partially exported level is worse than a failed compile: it makes
+            // painted faces silently disappear in some rooms while others work.
+            // Require at least one compiled polygon for EVERY painted editor face.
+            var mappedFaces = new HashSet<(int room, int x, int z, SectorFace face)>();
+            foreach (var entry in entries)
+            {
+                mappedFaces.Add((Array.IndexOf(_level.Rooms, _sortedRooms[(int)entry.room]),
+                    (int)entry.x, (int)entry.z, (SectorFace)entry.face));
+            }
+            var missingFaces = painted.Keys.Where(key => !mappedFaces.Contains(key)).ToList();
+            if (missingFaces.Count != 0)
+            {
+                if (File.Exists(output)) File.Delete(output);
+                WriteAshaCausticsExportReport(_level.CausticsFaces.Count, entries.Count);
+                var details = string.Join("; ", missingFaces.Take(12).Select(key =>
+                    "room " + key.room + ", sector (" + key.x + "," + key.z +
+                    "), face " + key.face));
+                throw new InvalidDataException(
+                    "Caustics export incomplete: " + missingFaces.Count +
+                    " painted surface(s) have no compiled polygon. " + details +
+                    (missingFaces.Count > 12 ? "; ..." : "") +
+                    ". Correct the geometry mapping before producing a playable level.");
+            }
             if (entries.Count == 0)
             {
                 _progressReporter.ReportWarn("CAUSTICS EXPORT: " + _level.CausticsFaces.Count +
