@@ -233,6 +233,23 @@ namespace TombLib.LevelData.Compilers
                     (missingFaces.Count > 12 ? "; ..." : "") +
                     ". Correct the geometry mapping before producing a playable level.");
             }
+            // The renderer addresses polygons by (compiled room, ordinal).
+            // Reject collisions and out-of-range ordinals at export time, rather
+            // than letting the runtime discard the entire map or miss a room.
+            var usedPolygons = new HashSet<(uint room, uint ordinal)>();
+            foreach (var entry in entries)
+            {
+                var compiled = _tempRooms[_sortedRooms[(int)entry.room]];
+                uint polygonCount = (uint)(compiled.Quads.Count + compiled.Triangles.Count);
+                if (entry.ordinal >= polygonCount)
+                    throw new InvalidDataException(
+                        "Caustics polygon ordinal outside compiled room geometry: room " +
+                        entry.room + ", polygon " + entry.ordinal + ", count " + polygonCount);
+                if (!usedPolygons.Add((entry.room, entry.ordinal)))
+                    throw new InvalidDataException(
+                        "Duplicate Caustics polygon mapping: room " + entry.room +
+                        ", polygon " + entry.ordinal);
+            }
             if (entries.Count == 0)
             {
                 _progressReporter.ReportWarn("CAUSTICS EXPORT: " + _level.CausticsFaces.Count +
