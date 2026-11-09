@@ -22,6 +22,7 @@ namespace TombLib.Rendering
         volume,
         memo,
         light_effect,
+        light_caustics,
         light_fog,
         light_point,
         light_shadow,
@@ -37,6 +38,32 @@ namespace TombLib.Rendering
         private const float _fadeDistance = 256.0f;  // Distance at which sprite slowly fades out
         private const float _zoomRatio = 3.5f;       // Magic zoom ratio!
 
+        // Asha caustics receives its own blue water-wave sprite. Generate it in
+        // memory so no hand-edited binary resource or game shader is required.
+        private static ImageC CreateCausticsSprite()
+        {
+            const int size = 64;
+            using (var bitmap = new Bitmap(size, size, PixelFormat.Format32bppArgb))
+            using (var graphics = Graphics.FromImage(bitmap))
+            using (var pen = new Pen(Color.FromArgb(245, 224, 247, 255), 3.2f))
+            using (var fill = new SolidBrush(Color.FromArgb(230, 24, 100, 220)))
+            {
+                graphics.SmoothingMode = SmoothingMode.AntiAlias;
+                graphics.Clear(Color.Transparent);
+                graphics.FillEllipse(fill, 5, 5, 54, 54);
+                using (var ring = new Pen(Color.FromArgb(255, 116, 210, 255), 3.0f))
+                    graphics.DrawEllipse(ring, 5, 5, 54, 54);
+                // Three small water crests read as waves even in the 16px mip.
+                for (int i = 0; i < 3; i++)
+                {
+                    float y = 23 + i * 9;
+                    graphics.DrawBezier(pen, 15, y + 3, 23, y - 4, 26, y - 4, 33, y + 1);
+                    graphics.DrawBezier(pen, 33, y + 1, 39, y + 7, 45, y + 1, 50, y - 2);
+                }
+                return ImageC.FromSystemDrawingImage(bitmap);
+            }
+        }
+
         private static List<ImageC> _serviceTextures;
         public static List<ImageC> Images
         {
@@ -47,8 +74,10 @@ namespace TombLib.Rendering
                     _serviceTextures = new List<ImageC>();
                     foreach (var name in Enum.GetNames(typeof(ServiceObjectTexture)))
                     {
-                        var img = ImageC.FromStream(Assembly.GetExecutingAssembly().GetManifestResourceStream(nameof(TombLib)
-                            + "." + nameof(Rendering) + ".ServiceObjectTextures." + name + ".png"));
+                        var img = name == nameof(ServiceObjectTexture.light_caustics)
+                            ? CreateCausticsSprite()
+                            : ImageC.FromStream(Assembly.GetExecutingAssembly().GetManifestResourceStream(nameof(TombLib)
+                                + "." + nameof(Rendering) + ".ServiceObjectTextures." + name + ".png"));
 
                         // Add original texture
                         _serviceTextures.Add(img);
@@ -106,6 +135,9 @@ namespace TombLib.Rendering
                 {
                     case LightType.Effect:
                         type = ServiceObjectTexture.light_effect;
+                        break;
+                    case LightType.CausticsEffect:
+                        type = ServiceObjectTexture.light_caustics;
                         break;
                     case LightType.FogBulb:
                         type = ServiceObjectTexture.light_fog;
