@@ -1,7 +1,7 @@
 name: Asha Expedition Caustics Build
 on:
   push:
-    branches: [feature/asha-caustics-effect]
+    branches: [feature/asha-caustics-effect, work/caustics-blue-bulb-restoration]
   workflow_dispatch:
 jobs:
   build:
