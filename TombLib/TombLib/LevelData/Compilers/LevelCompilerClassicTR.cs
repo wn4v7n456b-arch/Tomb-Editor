@@ -210,7 +210,9 @@ namespace TombLib.LevelData.Compilers
                 foreach (var origin in origins)
                 {
                     if (!painted.TryGetValue((originalRoom, origin.x, origin.z, origin.face), out var settings)) continue;
-                    entries.Add(((uint)compiledRoom,
+                    // BuildRooms skips null sorted-room entries when assigning runtime room IDs.
+                    // Export the actual room ID, not the sparse sorted-array index.
+                    entries.Add(((uint)_roomRemapping[room],
                         (uint)(origin.quad ? origin.index : finalQuadCount + origin.index),
                         (uint)origin.x, (uint)origin.z, Convert.ToUInt32(origin.face), settings));
                 }
@@ -221,7 +223,7 @@ namespace TombLib.LevelData.Compilers
             var mappedFaces = new HashSet<(int room, int x, int z, SectorFace face)>();
             foreach (var entry in entries)
             {
-                mappedFaces.Add((Array.IndexOf(_level.Rooms, _sortedRooms[(int)entry.room]),
+                mappedFaces.Add((Array.IndexOf(_level.Rooms, _roomUnmapping[(int)entry.room]),
                     (int)entry.x, (int)entry.z, (SectorFace)entry.face));
             }
             // Summarize coverage by compiled room so a level author can identify
@@ -254,7 +256,7 @@ namespace TombLib.LevelData.Compilers
             var usedPolygons = new HashSet<(uint room, uint ordinal)>();
             foreach (var entry in entries)
             {
-                var compiled = _tempRooms[_sortedRooms[(int)entry.room]];
+                var compiled = _tempRooms[_roomUnmapping[(int)entry.room]];
                 uint polygonCount = (uint)(compiled.Quads.Count + compiled.Triangles.Count);
                 if (entry.ordinal >= polygonCount)
                     throw new InvalidDataException(
@@ -347,7 +349,7 @@ namespace TombLib.LevelData.Compilers
                     throw new InvalidDataException("Invalid painted Caustics face in level.");
                 // The playable TR4 uses the rearranged room order, not the
                 // editor's source-room array index. Resolve by room identity.
-                int compiledRoomIndex = Array.IndexOf(_sortedRooms, _level.Rooms[record.RoomIndex]);
+                int compiledRoomIndex = _roomRemapping.TryGetValue(_level.Rooms[record.RoomIndex], out int runtimeRoomIndex) ? runtimeRoomIndex : -1;
                 if (compiledRoomIndex < 0)
                     throw new InvalidDataException("Painted Caustics room missing from compiled room order.");
                 records.Add(((uint)compiledRoomIndex, (uint)record.SectorX,
