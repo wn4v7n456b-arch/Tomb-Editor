@@ -520,7 +520,7 @@ namespace TombEditor.Controls.Panel3D
                 if (light.Type == LightType.Sun)
                     color = new Vector4(1.0f, 0.5f, 0.0f, 1.0f);
                 if (light.Type == LightType.CausticsEffect)
-                    color = new Vector4(0.25f, 0.85f, 1.0f, 1.0f);
+                    color = new Vector4(0.18f, 0.50f, 1.0f, 1.0f);
                 if (_highlightedObjects.Contains(light))
                     color = _editor.Configuration.UI_ColorScheme.ColorSelection;
 
@@ -560,19 +560,16 @@ namespace TombEditor.Controls.Panel3D
                     }
                     else if (light.Type == LightType.CausticsEffect)
                     {
-                        // Preview the authored effect bounds independently on all three axes.
-                        // This is a wireframe placement guide, not the animated shader.
+                        // Use exactly the same outer-radius sphere as the standard point
+                        // light. The bulb controls coverage, not the shape or scale of
+                        // the animated caustic pattern. No axis-specific stretching.
                         _legacyDevice.SetVertexBuffer(_sphere.VertexBuffer);
                         _legacyDevice.SetVertexInputLayout(_sphere.InputLayout);
                         _legacyDevice.SetIndexBuffer(_sphere.IndexBuffer, _sphere.IsIndex32Bits);
 
-                        float radius = Math.Max(0.01f, light.OuterRange * 2.0f);
-                        Matrix4x4 model = Matrix4x4.CreateScale(
-                            radius * Math.Max(0.1f, light.CausticsWidth),
-                            radius * Math.Max(0.1f, light.CausticsHeight),
-                            radius * Math.Max(0.1f, light.CausticsScale)) * light.ObjectMatrix;
+                        Matrix4x4 model = Matrix4x4.CreateScale(light.OuterRange * 2.0f) * light.ObjectMatrix;
                         effect.Parameters["ModelViewProjection"].SetValue((model * _viewProjection).ToSharpDX());
-                        effect.Parameters["Color"].SetValue(new Vector4(0.25f, 0.85f, 1.0f, 1.0f));
+                        effect.Parameters["Color"].SetValue(new Vector4(0.18f, 0.50f, 1.0f, 1.0f));
                         effect.CurrentTechnique.Passes[0].Apply();
                         _legacyDevice.DrawIndexed(PrimitiveType.TriangleList, _sphere.IndexBuffer.ElementCount);
                     }
