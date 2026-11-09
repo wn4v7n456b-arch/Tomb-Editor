@@ -228,6 +228,17 @@ namespace TombLib.LevelData.Compilers
             }
             // Summarize coverage by compiled room so a level author can identify
             // which rooms contain painted output without inspecting binary ACPM.
+            // The runtime only draws the active version of a flipmapped room.
+            // Report the actual runtime IDs and original editor room indices,
+            // so a painted alternate cannot silently look like a renderer fault.
+            foreach (var group in entries.GroupBy(entry => entry.room).OrderBy(group => group.Key))
+            {
+                var sourceRoom = _roomUnmapping[(int)group.Key];
+                _progressReporter.ReportInfo("CAUSTICS ROOM IDENTITY: runtime=" + group.Key +
+                    " editor=" + Array.IndexOf(_level.Rooms, sourceRoom) +
+                    " polygons=" + group.Count() +
+                    " room=" + sourceRoom.Name);
+            }
             var compiledRoomCoverage = entries.GroupBy(entry => entry.room)
                 .OrderBy(group => group.Key)
                 .Select(group => "compiled room " + group.Key + ": " + group.Count() +
