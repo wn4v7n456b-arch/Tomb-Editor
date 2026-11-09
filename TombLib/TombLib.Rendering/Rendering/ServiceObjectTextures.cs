@@ -44,7 +44,7 @@ namespace TombLib.Rendering
         {
             const int size = 64;
             using (var bitmap = new Bitmap(size, size, PixelFormat.Format32bppArgb))
-            using (var graphics = Graphics.FromImage(bitmap))
+            using (var graphics = System.Drawing.Graphics.FromImage(bitmap))
             using (var pen = new Pen(Color.FromArgb(245, 224, 247, 255), 3.2f))
             using (var fill = new SolidBrush(Color.FromArgb(230, 24, 100, 220)))
             {
