@@ -162,17 +162,6 @@ namespace TombEditor.Forms
             GetWindow<ItemBrowser>().InitializeRendering(_editor.RenderingDevice);
             GetWindow<ImportedGeometryBrowser>().InitializeRendering(_editor.RenderingDevice);
 
-            // Asha Caustics: explicit visible entry point in the existing editor.
-            // No hidden shortcut or separate executable required.
-            var ashaCausticsMenu = new ToolStripMenuItem
-            {
-                Name = "ashaCausticsMenu",
-                Text = "CAUSTICS",
-                ToolTipText = "Open Asha caustics surface authoring controls"
-            };
-            ashaCausticsMenu.Click += (sender, args) => ShowAshaCausticsPanel();
-            menuStrip.Items.Add(ashaCausticsMenu);
-
             // Asha Expedition: prominent one-click build-and-play action.
             var ashaPlayButton = new ToolStripMenuItem
             {
