@@ -1673,11 +1673,11 @@ namespace TombLib.LevelData.IO
                     instance.IsUsedForImportedGeometry = chunkIO.Raw.ReadBoolean();
                     instance.Quality = (LightQuality)chunkIO.Raw.ReadByte();
 
-                    if (id3 == Prj2Chunks.ObjectLight5 || id3 == Prj2Chunks.ObjectLight6)
+                    if (id3 == Prj2Chunks.ObjectLight5 || id3 == Prj2Chunks.ObjectLight6 || id3 == Prj2Chunks.ObjectLight7 || id3 == Prj2Chunks.ObjectLight8)
                     {
                         instance.CastDynamicShadows = chunkIO.Raw.ReadBoolean();
                     }
-                    if (id3 == Prj2Chunks.ObjectLight6 || id3 == Prj2Chunks.ObjectLight7)
+                    if (id3 == Prj2Chunks.ObjectLight6 || id3 == Prj2Chunks.ObjectLight7 || id3 == Prj2Chunks.ObjectLight8)
                     {
                         instance.CausticsSpeed = chunkIO.Raw.ReadSingle();
                         instance.CausticsPatternSize = chunkIO.Raw.ReadSingle();
