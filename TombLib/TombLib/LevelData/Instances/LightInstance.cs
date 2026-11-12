@@ -70,8 +70,9 @@ namespace TombLib.LevelData
                     IsDynamicallyUsed = false;
                     break;
                 case LightType.CausticsEffect:
-                    // Dedicated runtime controller. It does not illuminate room geometry.
-                    InnerRange = 0.0f;
+                    // Two concentric falloff spheres: full strength within the inner,
+                    // soft fade to zero at the outer, without affecting existing bulbs.
+                    InnerRange = 1.25f;
                     // Start with a localized reflection pool; artists can enlarge
                     // the radius with the existing Outer Range editor control.
                     OuterRange = 2.5f;
