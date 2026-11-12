@@ -16,6 +16,7 @@ namespace TombEditor.ToolWindows
         private readonly NumericUpDown causticsDistortion = new NumericUpDown();
         private readonly NumericUpDown causticsSoftness = new NumericUpDown();
         private bool updatingCausticsControls;
+        private readonly CheckBox causticsAmbient = new CheckBox { Text = "Inherit room ambient colour (default)", AutoSize = true };
 
         private void AddCausticsSetting(string label, NumericUpDown input, decimal min, decimal max,
             decimal increment, Func<LightInstance, float> getter, Action<LightInstance, float> setter)
@@ -46,7 +47,17 @@ namespace TombEditor.ToolWindows
             causticsPanel.WrapContents = true;
             causticsPanel.AutoScroll = true;
             causticsPanel.Dock = DockStyle.Bottom;
-            causticsPanel.Height = 72;
+            causticsPanel.Height = 110;
+            causticsPanel.Controls.Add(causticsAmbient);
+            causticsAmbient.CheckedChanged += (sender, args) =>
+            {
+                if (updatingCausticsControls || !causticsPanel.Visible) return;
+                EditorActions.UpdateLight<bool>(
+                    (light, value) => light.Type != LightType.CausticsEffect || light.CausticsInheritRoomAmbient == value,
+                    (light, value) => light.CausticsInheritRoomAmbient = value,
+                    light => causticsAmbient.Checked, updateLighting: false);
+                panelLightColor.Enabled = !causticsAmbient.Checked;
+            };
             causticsPanel.Visible = false;
             AddCausticsSetting("Scale", causticsSpeed, 0.1m, 20, 0.1m,
                 l => l.CausticsScale, (l, v) => l.CausticsScale = v);
@@ -178,13 +189,14 @@ namespace TombEditor.ToolWindows
                     ? "Caustics brightness: lower values produce subtler water reflections."
                     : "Light intensity");
                 toolTip.SetToolTip(numInnerRange, isCaustics
-                    ? "Reserved for future caustics softness controls; not yet connected in-game."
+                    ? "Full-strength caustics to this inner sphere; fade to the outer sphere."
                     : "Inner radius or distance");
 
                 updatingCausticsControls = true;
                 causticsPanel.Visible = isCaustics;
                 if (isCaustics)
                 {
+                    causticsAmbient.Checked = light.CausticsInheritRoomAmbient;
                     causticsSpeed.Value = Math.Max(causticsSpeed.Minimum, Math.Min(causticsSpeed.Maximum, (decimal)light.CausticsScale));
                     causticsPattern.Value = Math.Max(causticsPattern.Minimum, Math.Min(causticsPattern.Maximum, (decimal)light.CausticsWidth));
                     causticsDistortion.Value = Math.Max(causticsDistortion.Minimum, Math.Min(causticsDistortion.Maximum, (decimal)light.CausticsHeight));
@@ -194,7 +206,7 @@ namespace TombEditor.ToolWindows
                 // Update enable state
                 // We set it before the values to make sure that irrelevant values are
                 // not recognized as being changed to 0 in the "ValueChanged" functions.
-                panelLightColor.Enabled = light != null;
+                panelLightColor.Enabled = light != null && (!isCaustics || !light.CausticsInheritRoomAmbient);
                 cbLightEnabled.Enabled = light != null;
                 cbLightIsObstructedByRoomGeometry.Enabled = CanCastShadows;
                 cbLightCastsShadow.Enabled = CanCastDynamicShadows;
