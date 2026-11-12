@@ -10,67 +10,32 @@ namespace TombEditor.ToolWindows
     public partial class Lighting : DarkToolWindow
     {
         private readonly Editor _editor;
-        private readonly System.Windows.Forms.FlowLayoutPanel causticsPanel = new System.Windows.Forms.FlowLayoutPanel();
-        private readonly NumericUpDown causticsSpeed = new NumericUpDown();
-        private readonly NumericUpDown causticsPattern = new NumericUpDown();
-        private readonly NumericUpDown causticsDistortion = new NumericUpDown();
-        private readonly NumericUpDown causticsSoftness = new NumericUpDown();
-        private bool updatingCausticsControls;
-        private readonly CheckBox causticsAmbient = new CheckBox { Text = "Inherit room ambient colour (default)", AutoSize = true };
-
-        private void AddCausticsSetting(string label, NumericUpDown input, decimal min, decimal max,
-            decimal increment, Func<LightInstance, float> getter, Action<LightInstance, float> setter)
+        private readonly CheckBox causticsAmbient = new CheckBox
         {
-            var title = new Label { Text = label, AutoSize = false, Width = 94, Height = 22,
-                TextAlign = System.Drawing.ContentAlignment.MiddleRight };
-            input.Width = 65;
-            input.DecimalPlaces = 2;
-            input.Minimum = min;
-            input.Maximum = max;
-            input.Increment = increment;
-            causticsPanel.Controls.Add(title);
-            causticsPanel.Controls.Add(input);
-            input.ValueChanged += (sender, args) =>
-            {
-                if (updatingCausticsControls || !causticsPanel.Visible) return;
-                EditorActions.UpdateLight<float>(
-                    (light, value) => light.Type != LightType.CausticsEffect ||
-                        Math.Abs(getter(light) - value) < 0.005f,
-                    (light, value) => setter(light, value),
-                    light => (float)input.Value, updateLighting: false);
-            };
-        }
+            Text = "Inherit room ambient colour (default)",
+            AutoSize = true
+        };
+        private bool updatingCausticsControls;
 
         private void InitializeCausticsControls()
         {
-            causticsPanel.FlowDirection = FlowDirection.LeftToRight;
-            causticsPanel.WrapContents = true;
-            causticsPanel.AutoScroll = true;
-            causticsPanel.Dock = DockStyle.Bottom;
-            causticsPanel.Height = 110;
-            causticsPanel.Controls.Add(causticsAmbient);
+            causticsAmbient.Dock = DockStyle.Bottom;
+            causticsAmbient.Height = 28;
             causticsAmbient.CheckedChanged += (sender, args) =>
             {
-                if (updatingCausticsControls || !causticsPanel.Visible) return;
+                if (updatingCausticsControls || !causticsAmbient.Visible) return;
                 EditorActions.UpdateLight<bool>(
-                    (light, value) => light.Type != LightType.CausticsEffect || light.CausticsInheritRoomAmbient == value,
+                    (light, value) => light.Type != LightType.CausticsEffect ||
+                        light.CausticsInheritRoomAmbient == value,
                     (light, value) => light.CausticsInheritRoomAmbient = value,
                     light => causticsAmbient.Checked, updateLighting: false);
                 panelLightColor.Enabled = !causticsAmbient.Checked;
             };
-            causticsPanel.Visible = false;
-            AddCausticsSetting("Scale", causticsSpeed, 0.1m, 20, 0.1m,
-                l => l.CausticsScale, (l, v) => l.CausticsScale = v);
-            AddCausticsSetting("Width", causticsPattern, 0.1m, 20, 0.1m,
-                l => l.CausticsWidth, (l, v) => l.CausticsWidth = v);
-            AddCausticsSetting("Height", causticsDistortion, 0.1m, 20, 0.1m,
-                l => l.CausticsHeight, (l, v) => l.CausticsHeight = v);
-
-            Controls.Add(causticsPanel);
-            MinimumSize = new System.Drawing.Size(MinimumSize.Width, 285);
-            Height = Math.Max(Height, 285);
+            Controls.Add(causticsAmbient);
+            causticsAmbient.Visible = false;
+            MinimumSize = new System.Drawing.Size(MinimumSize.Width, 180);
+            Height = Math.Max(Height, 180);
         }
-
 
         // UI ordering is independent of serialized LightType enum values.
         private static readonly LightType[] DisplayLightTypes = {
@@ -193,13 +158,10 @@ namespace TombEditor.ToolWindows
                     : "Inner radius or distance");
 
                 updatingCausticsControls = true;
-                causticsPanel.Visible = isCaustics;
+                causticsAmbient.Visible = isCaustics;
                 if (isCaustics)
                 {
                     causticsAmbient.Checked = light.CausticsInheritRoomAmbient;
-                    causticsSpeed.Value = Math.Max(causticsSpeed.Minimum, Math.Min(causticsSpeed.Maximum, (decimal)light.CausticsScale));
-                    causticsPattern.Value = Math.Max(causticsPattern.Minimum, Math.Min(causticsPattern.Maximum, (decimal)light.CausticsWidth));
-                    causticsDistortion.Value = Math.Max(causticsDistortion.Minimum, Math.Min(causticsDistortion.Maximum, (decimal)light.CausticsHeight));
                 }
                 updatingCausticsControls = false;
 
