@@ -1200,6 +1200,13 @@ namespace TombLib.LevelData.Compilers
                     intensity = (ushort)Math.Max(0, Math.Min(ushort.MaxValue, Math.Abs(light.Intensity) * 8191.0f));
                 }
 
+                // Resolve caustics colour explicitly at level build time:
+                // inherited bulbs use the room's authored ambient RGB, while
+                // custom bulbs use their independently selected light RGB.
+                // This avoids guessing from white and permits custom white.
+                if (light.Type == LightType.CausticsEffect && light.CausticsInheritRoomAmbient)
+                    color = PackColorTo24Bit(room.Properties.AmbientLight);
+
                 if (intensity == 0 || color.Red == 0 && color.Green == 0 && color.Blue == 0)
                     continue;
                 lightCount += 1;
