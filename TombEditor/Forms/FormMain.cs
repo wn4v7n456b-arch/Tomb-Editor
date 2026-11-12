@@ -162,6 +162,17 @@ namespace TombEditor.Forms
             GetWindow<ItemBrowser>().InitializeRendering(_editor.RenderingDevice);
             GetWindow<ImportedGeometryBrowser>().InitializeRendering(_editor.RenderingDevice);
 
+            // Preserve the surface-painting editor without a redundant top-level
+            // CAUSTICS menu. Access it from the existing View menu instead.
+            var ashaCausticsMenu = new ToolStripMenuItem
+            {
+                Name = "ashaCausticsMenu",
+                Text = "Asha Caustics Surface Painting",
+                ToolTipText = "Open Asha caustics surface authoring controls"
+            };
+            ashaCausticsMenu.Click += (sender, args) => ShowAshaCausticsPanel();
+            viewToolStripMenuItem.DropDownItems.Add(ashaCausticsMenu);
+
             // Asha Expedition: prominent one-click build-and-play action.
             var ashaPlayButton = new ToolStripMenuItem
             {
