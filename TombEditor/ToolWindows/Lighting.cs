@@ -67,8 +67,8 @@ namespace TombEditor.ToolWindows
                 l => l.CausticsHeight, (l, v) => l.CausticsHeight = v);
 
             Controls.Add(causticsPanel);
-            MinimumSize = new System.Drawing.Size(MinimumSize.Width, 225);
-            Height = Math.Max(Height, 225);
+            MinimumSize = new System.Drawing.Size(MinimumSize.Width, 285);
+            Height = Math.Max(Height, 285);
         }
 
 
