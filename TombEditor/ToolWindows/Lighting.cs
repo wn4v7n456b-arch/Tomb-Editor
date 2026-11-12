@@ -150,6 +150,11 @@ namespace TombEditor.ToolWindows
                 toolTip.SetToolTip(numOuterRange, isCaustics
                     ? "Caustics spread radius: smaller values keep the moving reflections local."
                     : "Outer radius or distance");
+                // TR4 type-5 intensity is packed into a signed 16-bit field:
+                // values above 4.0 overflow at export, so keep caustics
+                // intensity within the full supported range.
+                numIntensity.Minimum = isCaustics ? 0m : -128m;
+                numIntensity.Maximum = isCaustics ? 4m : 128m;
                 toolTip.SetToolTip(numIntensity, isCaustics
                     ? "Caustics brightness: lower values produce subtler water reflections."
                     : "Light intensity");
